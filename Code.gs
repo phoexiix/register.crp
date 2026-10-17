@@ -24,7 +24,7 @@ const HEADERS = [
   'ApplicationID', 'CreatedAt', 'Prefix', 'FirstName', 'LastName',
   'BirthDate', 'Phone', 'Email', 'Province', 'Education', 'Motivation',
   'Status', 'AdminNote', 'UpdatedAt',
-  'Nationality', 'Ethnicity', 'ReviewStatus', 'ReviewData', 'DecisionReason'
+  'Nationality', 'Ethnicity', 'ReviewStatus', 'ReviewData', 'DecisionReason', 'Region'
 ];
 const AUDIT_HEADERS = ['At', 'Actor', 'Action', 'ApplicationID', 'Details'];
 const REVIEW_OPTIONS = ['ผ่าน', 'ไม่ผ่าน'];
@@ -124,9 +124,10 @@ function logout_(p) {
 // ---------- Public: ค้นหาด้วยรหัสผู้สมัครเท่านั้น เพื่อป้องกันการเปิดเผยข้อมูลส่วนบุคคล ----------
 function publicSearch_(p) {
   const query = normalize_(clean_(p.query, 120));
-  if (!query) return { total: 0, items: [] };
-  const matching = allRows_().filter(r => normalize_(r.ApplicationID) === query).map(publicView_);
-  return { total: matching.length, items: matching };
+  const matching = allRows_().filter(r => !query || normalize_(r.ApplicationID + ' ' + r.Prefix + ' ' + r.FirstName + ' ' + r.LastName).includes(query)).map(publicView_);
+  const offset = Math.max(0, Math.floor(Number(p.offset) || 0));
+  const limit = Math.min(200, Math.max(1, Math.floor(Number(p.limit) || 100)));
+  return { total: matching.length, items: matching.slice(offset, offset + limit) };
 }
 
 function publicDetails_(p) {
@@ -141,6 +142,7 @@ function publicView_(r) {
     applicationId: r.ApplicationID,
     fullName: [r.Prefix, r.FirstName, r.LastName].filter(Boolean).join(' '),
     province: r.Province,
+    region: r.Region,
     education: r.Education,
     registeredAt: r.CreatedAt,
     registration: 'ลงทะเบียนสำเร็จ',
@@ -230,13 +232,10 @@ function saveReview_(p) {
   try {
     const match = findRow_(id);
     if (!match) throw new Error('ไม่พบข้อมูลผู้สมัคร');
-    if (['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(match.record.Status)) {
-      throw new Error('ผู้สมัครรายนี้ได้รับการตัดสินผลแล้ว');
-    }
     const record = Object.assign({}, match.record, {
       ReviewStatus: 'ตรวจสอบแล้ว',
       ReviewData: JSON.stringify(result),
-      Status: 'อยู่ระหว่างพิจารณา',
+      Status: ['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(match.record.Status) ? match.record.Status : 'อยู่ระหว่างพิจารณา',
       UpdatedAt: new Date().toISOString()
     });
     writeRecord_(match, record);
@@ -316,6 +315,7 @@ function validateInput_(obj) {
     Phone: clean_(obj.phone, 30),
     Email: clean_(obj.email, 150),
     Province: clean_(obj.province, 100),
+    Region: clean_(obj.region, 60),
     Education: clean_(obj.education, 100),
     Motivation: clean_(obj.motivation, 3000),
     Nationality: clean_(obj.nationality, 100),
@@ -329,6 +329,8 @@ function validateInput_(obj) {
   if (Number.isNaN(birth.getTime()) || birth.toISOString().slice(0, 10) !== r.BirthDate || birth > new Date()) {
     throw new Error('วันเดือนปีเกิดไม่ถูกต้อง');
   }
+  if (r.Region && !['ภาคเหนือ', 'ภาคตะวันออกเฉียงเหนือ', 'ภาคกลาง', 'ภาคตะวันออก', 'ภาคตะวันตก', 'ภาคใต้'].includes(r.Region)) throw new Error('ภูมิภาคไม่ถูกต้อง');
+  if (r.Ethnicity && !['ไทย', 'อเมริกา', 'อื่นๆ', 'อื่น ๆ'].includes(r.Ethnicity)) throw new Error('เชื้อชาติไม่ถูกต้อง');
   if (r.Email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.Email)) throw new Error('อีเมลไม่ถูกต้อง');
   return r;
 }

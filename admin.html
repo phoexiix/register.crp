@@ -8,8 +8,7 @@
    CRP | เจ้าหน้าที่
   </title>
   <style>
-
-* {
+   * {
   box-sizing: border-box
 }
 body {
@@ -269,7 +268,8 @@ footer {
     flex-direction: column
   }
 }
-</style>
+.review-row{display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:center;gap:16px;padding:8px 0;border-bottom:1px solid #e5ebf6}.review-row label{margin:0}.review-row select{width:100%}@media(max-width:680px){.review-row{grid-template-columns:1fr}}
+  </style>
  </head>
  <body>
   <header>
@@ -321,7 +321,7 @@ footer {
         ระบบบริหารจัดการผู้สมัคร
        </h1>
        <p class="muted">
-        Civilian Recruitment &amp; Preparation
+        Civilian Recruitment & Preparation
        </p>
       </div>
       <button class="ghost" id="logout">
@@ -337,10 +337,12 @@ footer {
       <button data-tab="applications">
        รายชื่อผู้สมัคร
       </button>
-       <button data-tab="add">
+      <button data-tab="add">
        เพิ่มข้อมูลผู้สมัคร
       </button>
-      <button data-tab="review">การตรวจสอบข้อมูล</button>
+      <button data-tab="review">
+       การตรวจสอบข้อมูล
+      </button>
       <button data-tab="approval">
        การอนุมัติ
       </button>
@@ -384,59 +386,202 @@ footer {
      <h2 id="formTitle">
       เพิ่มข้อมูลผู้สมัคร
      </h2>
-           <form id="applicationForm">
-        <div class="grid">
-          <div>
-            <label>รหัสผู้สมัคร *</label>
-            <input name="applicationId" maxlength="50" pattern="[A-Za-z0-9_-]{2,50}" required placeholder="เช่น CRP-0001" autocomplete="off">
-          </div>
-          <div><label>คำนำหน้าชื่อ *</label><select name="prefix" required>
-            <option value="">เลือกคำนำหน้า</option><option>นาย</option><option>นาง</option>
-            <option>นางสาว</option><option>อื่น ๆ</option>
-          </select></div>
-          <div><label>วันเดือนปีเกิด *</label><input name="birthDate" id="birthDate" type="date" required></div>
-          <div><label>ชื่อ *</label><input name="firstName" maxlength="100" required></div>
-          <div><label>นามสกุล *</label><input name="lastName" maxlength="100" required></div>
-          <div><label>อายุ (คำนวณอัตโนมัติ)</label><input id="ageDisplay" readonly placeholder="เลือกวันเกิดก่อน"></div>
-          <div><label>สัญชาติ *</label><select name="nationality" required>
-            <option value="">เลือกสัญชาติ</option><option>ไทย</option><option>ลาว</option>
-            <option>เมียนมา</option><option>กัมพูชา</option><option>มาเลเซีย</option>
-            <option>อื่น ๆ</option>
-          </select></div>
-          <div><label>เชื้อชาติ *</label><select name="ethnicity" required>
-            <option value="">เลือกเชื้อชาติ</option><option>ไทย</option><option>จีน</option>
-            <option>ลาว</option><option>มอญ</option><option>มลายู</option><option>อื่น ๆ</option>
-          </select></div>
-          <div><label>ระดับการศึกษา *</label><select name="education" required>
-            <option value="">เลือกระดับการศึกษา</option><option>ประถมศึกษา</option>
-            <option>มัธยมศึกษาตอนต้น</option><option>มัธยมศึกษาตอนปลาย/ปวช.</option>
-            <option>อนุปริญญา/ปวส.</option><option>ปริญญาตรี</option>
-            <option>สูงกว่าปริญญาตรี</option><option>อื่น ๆ</option>
-          </select></div>
-          <div><label>เบอร์โทรศัพท์ (10 หลัก) *</label>
-            <input name="phone" type="tel" inputmode="numeric" maxlength="10" minlength="10" pattern="[0-9]{10}" required placeholder="0812345678">
-          </div>
-        </div>
-        <div class="actions">
-          <button class="orange" id="saveBtn" type="submit">บันทึกผู้สมัคร</button>
-          <button class="ghost" id="resetBtn" type="button">ล้างแบบฟอร์ม</button>
-        </div>
-      </form>
+     <form id="applicationForm">
+      <div class="grid">
+       <div>
+        <label>
+         รหัสผู้สมัคร *
+        </label>
+        <input maxlength="50" name="applicationId" pattern="[A-Za-z0-9_-]{2,50}" placeholder="เช่น CRP-0001" required=""/>
+       </div>
+       <div>
+        <label>
+         คำนำหน้า *
+        </label>
+        <select name="prefix" required="">
+         <option value="">
+          เลือกคำนำหน้า
+         </option>
+         <option>
+          นาย
+         </option>
+         <option>
+          นาง
+         </option>
+         <option>
+          นางสาว
+         </option>
+         <option>
+          อื่น ๆ
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         ชื่อ *
+        </label>
+        <input maxlength="100" name="firstName" required=""/>
+       </div>
+       <div>
+        <label>
+         นามสกุล *
+        </label>
+        <input maxlength="100" name="lastName" required=""/>
+       </div>
+       <div>
+        <label>
+         วันเดือนปีเกิด *
+        </label>
+        <input id="birthDate" name="birthDate" required="" type="date"/>
+       </div>
+       <div>
+        <label>
+         อายุ (คำนวณอัตโนมัติ)
+        </label>
+        <input id="ageDisplay" placeholder="เลือกวันเกิดก่อน" readonly=""/>
+       </div>
+       <div>
+        <label>
+         สัญชาติ *
+        </label>
+        <select name="nationality" required="">
+         <option value="">
+          เลือกสัญชาติ
+         </option>
+         <option>
+          ไทย
+         </option>
+         <option>
+          อเมริกา
+         </option>
+         <option>
+          อื่นๆ
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         เชื้อชาติ *
+        </label>
+        <select name="ethnicity" required="">
+         <option value="">
+          เลือกเชื้อชาติ
+         </option>
+         <option>
+          ไทย
+         </option>
+         <option>
+          อเมริกา
+         </option>
+         <option>
+          อื่นๆ
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         ภูมิภาค *
+        </label>
+        <select id="regionSelect" name="region" required="">
+         <option value="">
+          เลือกภูมิภาค
+         </option>
+         <option>
+          ภาคเหนือ
+         </option>
+         <option>
+          ภาคตะวันออกเฉียงเหนือ
+         </option>
+         <option>
+          ภาคกลาง
+         </option>
+         <option>
+          ภาคตะวันออก
+         </option>
+         <option>
+          ภาคตะวันตก
+         </option>
+         <option>
+          ภาคใต้
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         จังหวัด *
+        </label>
+        <input id="provinceInput" list="provinceOptions" name="province" placeholder="เลือกหรือพิมพ์ชื่อจังหวัด" required=""/>
+        <datalist id="provinceOptions">
+        </datalist>
+       </div>
+       <div>
+        <label>
+         ระดับการศึกษา *
+        </label>
+        <select name="education" required="">
+         <option value="">
+          เลือกระดับการศึกษา
+         </option>
+         <option>
+          ประถมศึกษา
+         </option>
+         <option>
+          มัธยมศึกษาตอนต้น
+         </option>
+         <option>
+          มัธยมศึกษาตอนปลาย/ปวช.
+         </option>
+         <option>
+          อนุปริญญา/ปวส.
+         </option>
+         <option>
+          ปริญญาตรี
+         </option>
+         <option>
+          สูงกว่าปริญญาตรี
+         </option>
+         <option>
+          อื่น ๆ
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         เบอร์โทรศัพท์ (10 หลัก) *
+        </label>
+        <input inputmode="numeric" maxlength="10" name="phone" pattern="[0-9]{10}" placeholder="0812345678" required="" type="tel"/>
+       </div>
+      </div>
+      <div class="actions">
+       <button class="orange" id="saveBtn" type="submit">
+        บันทึกผู้สมัคร
+       </button>
+       <button class="ghost" id="resetBtn" type="button">
+        ล้างแบบฟอร์ม
+       </button>
+      </div>
+     </form>
     </section>
     <section class="card hidden" id="tab-review">
-      <h2>การตรวจสอบข้อมูล</h2>
-      <p class="muted">รายการที่ยังไม่ผ่านขั้นตอนตรวจสอบข้อมูล</p>
-      <div class="list" id="reviewList"></div>
+     <h2>
+      การตรวจสอบข้อมูล
+     </h2>
+     <p class="muted">
+      รายการที่ยังไม่ผ่านขั้นตอนตรวจสอบข้อมูล
+     </p>
+     <div class="list" id="reviewList">
+     </div>
     </section>
     <section class="card hidden" id="tab-approval">
      <h2>
       พิจารณาและอนุมัติผล
      </h2>
      <form class="search" id="approvalFindForm">
-      <input id="approvalFind" placeholder="ค้นหาชื่อ หรือรหัสผู้สมัคร"/>
-      <button>
-       ค้นหา
-      </button>
+      <input id="approvalFind" placeholder="ค้นหาชื่อ หรือรหัสผู้สมัคร">
+       <button>
+        ค้นหา
+       </button>
+      </input>
      </form>
      <div class="list" id="approvalList" style="margin-top:15px">
      </div>
@@ -472,7 +617,7 @@ function dateText(v) { if (!v)
     return '-'; const d = new Date(v); return Number.isNaN(d.getTime()) ? esc(v) : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }); }
   </script>
   <script>
-const $ = id => document.getElementById(id);
+   const $ = id => document.getElementById(id);
 const STATUS = ['รอตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'];
 const CHECKS = [
   'การกำหนดรหัสผู้สมัคร', 'มีอายุตามกำหนด',
@@ -481,6 +626,102 @@ const CHECKS = [
   'วุฒิการศึกษา', 'ผลการเรียน', 'ทะเบียนบ้านและบัตรประชาชน',
   'สำเนาข้อมูลครอบครัว', 'หนังสืออนุมัติ'
 ];
+
+const REGION_PROVINCES = {
+  "ภาคเหนือ": [
+    "เชียงใหม่",
+    "เชียงราย",
+    "ลำพูน",
+    "ลำปาง",
+    "แพร่",
+    "น่าน",
+    "พะเยา",
+    "แม่ฮ่องสอน",
+    "อุตรดิตถ์"
+  ],
+  "ภาคตะวันออกเฉียงเหนือ": [
+    "นครราชสีมา",
+    "บุรีรัมย์",
+    "สุรินทร์",
+    "ศรีสะเกษ",
+    "อุบลราชธานี",
+    "ยโสธร",
+    "ชัยภูมิ",
+    "อำนาจเจริญ",
+    "หนองบัวลำภู",
+    "ขอนแก่น",
+    "อุดรธานี",
+    "เลย",
+    "หนองคาย",
+    "มหาสารคาม",
+    "ร้อยเอ็ด",
+    "กาฬสินธุ์",
+    "สกลนคร",
+    "นครพนม",
+    "มุกดาหาร",
+    "บึงกาฬ"
+  ],
+  "ภาคกลาง": [
+    "กรุงเทพมหานคร",
+    "นนทบุรี",
+    "ปทุมธานี",
+    "พระนครศรีอยุธยา",
+    "อ่างทอง",
+    "ลพบุรี",
+    "สิงห์บุรี",
+    "ชัยนาท",
+    "สระบุรี",
+    "นครนายก",
+    "สุพรรณบุรี",
+    "นครปฐม",
+    "สมุทรปราการ",
+    "สมุทรสาคร",
+    "สมุทรสงคราม"
+  ],
+  "ภาคตะวันออก": [
+    "ชลบุรี",
+    "ระยอง",
+    "จันทบุรี",
+    "ตราด",
+    "ฉะเชิงเทรา",
+    "ปราจีนบุรี",
+    "สระแก้ว"
+  ],
+  "ภาคตะวันตก": [
+    "ตาก",
+    "กาญจนบุรี",
+    "ราชบุรี",
+    "เพชรบุรี",
+    "ประจวบคีรีขันธ์"
+  ],
+  "ภาคใต้": [
+    "ชุมพร",
+    "ระนอง",
+    "สุราษฎร์ธานี",
+    "นครศรีธรรมราช",
+    "กระบี่",
+    "พังงา",
+    "ภูเก็ต",
+    "ตรัง",
+    "พัทลุง",
+    "สตูล",
+    "สงขลา",
+    "ปัตตานี",
+    "ยะลา",
+    "นราธิวาส"
+  ]
+};
+function updateProvinceOptions(clear = true) {
+  const region = $('regionSelect').value;
+  const list = $('provinceOptions');
+  list.replaceChildren(...(REGION_PROVINCES[region] || []).map(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    return option;
+  }));
+  if (clear) $('provinceInput').value = '';
+}
+$('regionSelect').addEventListener('change', () => updateProvinceOptions());
 
 let token = '';
 let editing = '';
@@ -619,7 +860,14 @@ async function loadReview() {
   msg('กำลังโหลดรายการตรวจสอบ...');
   try {
     const r = await fetchAllApplications({ stage: 'review' });
-    $('reviewList').replaceChildren(...(r.items || []).map(x => itemButton(x, 'review')));
+    $('reviewList').replaceChildren(...(r.items || []).map(x => {
+      const line = document.createElement('div');
+      line.className = 'item';
+      const name = [x.Prefix, x.FirstName, x.LastName].filter(Boolean).join(' ');
+      line.innerHTML = `<span><strong>${esc(name)}</strong><br><small class="muted">${esc(x.ApplicationID)}</small></span><button class="orange" type="button">ตรวจสอบข้อมูล</button>`;
+      line.querySelector('button').onclick = () => openRecord(x.ApplicationID, 'review');
+      return line;
+    }));
     msg('');
   } catch (err) { msg(err.message); }
 }
@@ -647,6 +895,7 @@ function detailFields(record) {
     ['คำนำหน้า', record.Prefix], ['ชื่อ', record.FirstName], ['นามสกุล', record.LastName],
     ['วันเดือนปีเกิด', record.BirthDate], ['อายุ', ageFromDate(record.BirthDate)],
     ['สัญชาติ', record.Nationality], ['เชื้อชาติ', record.Ethnicity],
+    ['ภูมิภาค', record.Region], ['จังหวัด', record.Province],
     ['ระดับการศึกษา', record.Education], ['เบอร์โทรศัพท์', record.Phone],
     ['วันที่ลงทะเบียน', dateText(record.CreatedAt)],
     ['ขั้นตอนปัจจุบัน', stageOf(record)], ['ผลการสมัคร', record.Status],
@@ -666,8 +915,12 @@ async function openRecord(id, mode) {
     $('modalTitle').textContent = r.ApplicationID;
     $('modalBody').innerHTML = `<dl>${detailFields(r)}</dl><div class="actions"><button id="editRecord" class="ghost">แก้ไขข้อมูล</button></div>`;
     $('editRecord').onclick = () => editRecord(r);
-    if (mode === 'review' && r.ReviewStatus !== 'ตรวจสอบแล้ว') renderReview(r);
+    if (mode === 'review') renderReview(r);
     if (mode === 'approval' && r.ReviewStatus === 'ตรวจสอบแล้ว') renderApproval(r);
+    if (mode === 'detail') {
+      if (r.ReviewStatus === 'ตรวจสอบแล้ว') renderReview(r);
+      if (r.ReviewStatus === 'ตรวจสอบแล้ว') renderApproval(r);
+    }
   } catch (err) {
     $('modalBody').textContent = err.message;
   }
@@ -682,7 +935,7 @@ function renderReview(record) {
     const line = document.createElement('div');
     line.style.marginBottom = '15px';
     const options = name === 'หนังสืออนุมัติ' ? ['ผ่าน', 'ไม่ผ่าน', 'ไม่ระบุ'] : ['ผ่าน', 'ไม่ผ่าน'];
-    line.innerHTML = `<label>${index + 1}. ${esc(name)}</label><select data-check="${index}"><option value="">เลือกผลตรวจสอบ</option>${options.map(v => `<option value="${esc(v)}" ${checks[name] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>`;
+    line.innerHTML = `<div class="review-row"><label>${index + 1}. ${esc(name)}</label><select data-check="${index}"><option value="">เลือกผลตรวจสอบ</option>${options.map(v => `<option value="${esc(v)}" ${checks[name] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`;
     section.append(line);
   });
   const button = document.createElement('button');
@@ -722,6 +975,8 @@ function renderApproval(record) {
     <p><label>เหตุผลการพิจารณา *</label><textarea id="decisionReason" rows="4" maxlength="2000" placeholder="ระบุเหตุผล"></textarea></p>
     <button id="decisionSave" class="orange">บันทึกผลการอนุมัติ</button>`;
   $('modalBody').append(section);
+  $('decisionSelect').value = ['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(record.Status) ? record.Status : '';
+  $('decisionReason').value = record.DecisionReason || record.AdminNote || '';
   $('decisionSave').onclick = async () => {
     const status = $('decisionSelect').value;
     const reason = $('decisionReason').value.trim();
@@ -745,12 +1000,13 @@ function editRecord(record) {
     applicationId: record.ApplicationID,
     prefix: record.Prefix, firstName: record.FirstName, lastName: record.LastName,
     birthDate: record.BirthDate, phone: record.Phone, nationality: record.Nationality,
-    ethnicity: record.Ethnicity, education: record.Education
+    ethnicity: record.Ethnicity, region: record.Region, province: record.Province, education: record.Education
   };
   for (const [key, value] of Object.entries(data)) {
     const input = form.elements.namedItem(key);
     if (input) input.value = value || '';
   }
+  updateProvinceOptions(false);
   updateAge();
   $('formTitle').textContent = 'แก้ไขข้อมูล ' + editing;
   $('saveBtn').textContent = 'บันทึกการแก้ไข';
@@ -761,6 +1017,8 @@ function editRecord(record) {
 function resetForm() {
   $('applicationForm').reset();
   editing = '';
+  updateProvinceOptions(false);
+  updateProvinceOptions(false);
   updateAge();
   $('formTitle').textContent = 'เพิ่มข้อมูลผู้สมัคร';
   $('saveBtn').textContent = 'บันทึกผู้สมัคร';
@@ -787,7 +1045,6 @@ $('applicationForm').onsubmit = async e => {
 function closeModal() { $('overlay').classList.add('hidden'); }
 $('closeModal').onclick = closeModal;
 $('overlay').onclick = e => { if (e.target === $('overlay')) closeModal(); };
-
   </script>
  </body>
 </html>
