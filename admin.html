@@ -408,58 +408,49 @@
   </footer>
   <script>
    const API_URL = 'https://script.google.com/macros/s/AKfycbwVQTb4kDCrGbg9OY7a9sio7IRl08-2Ag8EmOkkw_jBv3V6S3-WytWJXH2N5IR_pHGl/exec';
-const BRIDGE_ORIGIN = 'https://script.google.com';
-const bridgeFrame = document.createElement('iframe');
-bridgeFrame.style.display = 'none';
-bridgeFrame.setAttribute('title','CRP API');
-bridgeFrame.src = API_URL + '?page=bridge';
-let bridgeReady = false;
-let bridgeWindow = null;
-let bridgeOrigin = null;
-const pending = new Map();
-const readyWaiters = [];
-function trustedBridgeOrigin(origin) {
-  try { const u = new URL(origin); return u.protocol === 'https:' && (u.hostname === 'script.google.com' || u.hostname === 'script.googleusercontent.com' || u.hostname.endsWith('.googleusercontent.com')); }
-  catch (_) { return false; }
-}
-window.addEventListener('message', event => {
-  if (!trustedBridgeOrigin(event.origin) || !event.data || typeof event.data !== 'object') return;
-  if (event.data.crp === 'ready') {
-    // Apps Script HTML runs inside Google's nested iframe; capture its actual sender.
-    // Accept readiness only after the iframe was loaded from the configured Apps Script URL.
-    if (!bridgeFrame.isConnected || event.source === window) return;
-    bridgeWindow = event.source;
-    bridgeOrigin = event.origin;
-    bridgeReady = true;
-    readyWaiters.splice(0).forEach(fn => fn());
-    return;
-  }
-  if (event.data.crp === 'response') {
-    if (!bridgeReady || event.source !== bridgeWindow || event.origin !== bridgeOrigin) return;
-    const item = pending.get(event.data.id); if (!item) return;
-    pending.delete(event.data.id); clearTimeout(item.timer);
-    event.data.ok ? item.resolve(event.data.data) : item.reject(new Error(event.data.message || 'เกิดข้อผิดพลาด'));
-  }
-});
-document.body.appendChild(bridgeFrame);
-async function callServer(action, payload = {}) {
-  if (!bridgeReady) await new Promise((resolve,reject) => {
-    const timer = setTimeout(() => {
-      const index = readyWaiters.indexOf(onReady);
-      if (index !== -1) readyWaiters.splice(index,1);
-      reject(new Error('เชื่อมต่อ Apps Script ไม่สำเร็จ: ตรวจสอบสิทธิ์ Deploy, URL /exec และ CRP_GITHUB_ORIGIN'));
-    },20000);
-    const onReady = () => {clearTimeout(timer);resolve();};
-    readyWaiters.push(onReady);
-    if (bridgeReady) onReady();
-  });
-  return new Promise((resolve,reject) => {
-    const id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
-    const timer = setTimeout(() => {pending.delete(id);reject(new Error('เซิร์ฟเวอร์ตอบกลับช้าเกินไป'));},30000);
-    pending.set(id,{resolve,reject,timer});
-    bridgeWindow.postMessage({crp:'request',id,action,payload},bridgeOrigin);
-  });
-}
+
+ const bridgeFrame = document.createElement('iframe');
+ bridgeFrame.style.display = 'none';
+ bridgeFrame.title = 'CRP API';
+ bridgeFrame.src = API_URL + '?page=bridge&origin=' + encodeURIComponent(location.origin);
+ let bridgeReady = false, bridgeWindow = null, bridgeOrigin = null;
+ const pending = new Map(), readyWaiters = [];
+ function trustedBridgeOrigin(origin) {
+   try { const u = new URL(origin); return u.protocol === 'https:' && (u.hostname === 'script.google.com' || u.hostname === 'script.googleusercontent.com' || u.hostname.endsWith('.googleusercontent.com')); }
+   catch (_) { return false; }
+ }
+ window.addEventListener('message', event => {
+   if (!trustedBridgeOrigin(event.origin) || !event.data || typeof event.data !== 'object') return;
+   if (event.data.crp === 'ready') {
+     if (!bridgeFrame.isConnected || event.source === window) return;
+     bridgeWindow = event.source; bridgeOrigin = event.origin; bridgeReady = true;
+     readyWaiters.splice(0).forEach(fn => fn()); return;
+   }
+   if (event.data.crp === 'response') {
+     if (!bridgeReady || event.source !== bridgeWindow || event.origin !== bridgeOrigin) return;
+     const item = pending.get(event.data.id); if (!item) return;
+     pending.delete(event.data.id); clearTimeout(item.timer);
+     event.data.ok ? item.resolve(event.data.data) : item.reject(new Error(event.data.message || 'เกิดข้อผิดพลาด'));
+   }
+ });
+ document.body.appendChild(bridgeFrame);
+ async function callServer(action, payload = {}) {
+   if (!bridgeReady) await new Promise((resolve,reject) => {
+     const onReady = () => { clearTimeout(timer); resolve(); };
+     const timer = setTimeout(() => {
+       const index = readyWaiters.indexOf(onReady);
+       if (index !== -1) readyWaiters.splice(index,1);
+       reject(new Error('เชื่อมต่อ Apps Script ไม่สำเร็จ: ตรวจสอบ Web App Deploy, CRP_GITHUB_ORIGIN และการอนุญาต iframe'));
+     }, 30000);
+     readyWaiters.push(onReady); if (bridgeReady) onReady();
+   });
+   return new Promise((resolve,reject) => {
+     const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
+     const timer = setTimeout(() => { pending.delete(id); reject(new Error('เซิร์ฟเวอร์ตอบกลับช้าเกินไป')); }, 45000);
+     pending.set(id,{resolve,reject,timer});
+     bridgeWindow.postMessage({crp:'request',id,action,payload},bridgeOrigin);
+   });
+ }
 const CRP_API = { call: callServer };
 function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.isNaN(d.getTime()) ? esc(v) : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }); }
