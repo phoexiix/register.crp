@@ -1,0 +1,19 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>CRP Connector</title></head><body><script>
+(function(){
+'use strict';
+const allowed = <?!= JSON.stringify(allowedOrigin) ?>;
+if (!allowed || !/^https:\/\/[^/]+$/.test(allowed)) return;
+const send = data => window.top.postMessage(data, allowed);
+window.addEventListener('message', function(event){
+  if (event.origin !== allowed || !event.data || event.data.crp !== 'request') return;
+  const {id, action, payload} = event.data;
+  if (typeof id !== 'string' || id.length > 150 || typeof action !== 'string') return;
+  google.script.run.withSuccessHandler(data => send({crp:'response',id,ok:true,data}))
+    .withFailureHandler(error => send({crp:'response',id,ok:false,message:(error&&error.message)||'Server error'}))
+    .apiRequest(action,payload||{});
+});
+// Resend readiness: Google iframe may finish loading before the GitHub page is listening.
+send({crp:'ready'});
+setInterval(() => send({crp:'ready'}), 1500);
+})();
+</script></body></html>

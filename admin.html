@@ -410,7 +410,7 @@
    const API_URL = 'https://script.google.com/macros/s/AKfycbwVQTb4kDCrGbg9OY7a9sio7IRl08-2Ag8EmOkkw_jBv3V6S3-WytWJXH2N5IR_pHGl/exec';
 
  const bridgeFrame = document.createElement('iframe');
- bridgeFrame.style.display = 'none';
+ bridgeFrame.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0';
  bridgeFrame.title = 'CRP API';
  bridgeFrame.src = API_URL + '?page=bridge&origin=' + encodeURIComponent(location.origin);
  let bridgeReady = false, bridgeWindow = null, bridgeOrigin = null;
