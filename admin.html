@@ -269,12 +269,14 @@ footer {
   }
 }
 .review-row{display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:center;gap:16px;padding:8px 0;border-bottom:1px solid #e5ebf6}.review-row label{margin:0}.review-row select{width:100%}@media(max-width:680px){.review-row{grid-template-columns:1fr}}
-  </style>
+  .brand-logo{width:42px;height:42px;object-fit:contain;vertical-align:middle;margin-right:9px}
+</style>
  </head>
  <body>
   <header>
    <nav>
     <a class="brand" href="<?= appUrl ?>">
+     <img src="https://i.postimg.cc/qMDpFg75/albatross.png" alt="CRP Logo" class="brand-logo">
      CRP
      <b>
       STAFF CENTER
@@ -342,6 +344,9 @@ footer {
       </button>
       <button data-tab="review">
        การตรวจสอบข้อมูล
+      </button>
+      <button data-tab="reviewFailed">
+       ไม่ผ่านการตรวจสอบ
       </button>
       <button data-tab="approval">
        การอนุมัติ
@@ -572,6 +577,11 @@ footer {
      <div class="list" id="reviewList">
      </div>
     </section>
+    <section class="card hidden" id="tab-reviewFailed">
+     <h2>ไม่ผ่านการตรวจสอบ</h2>
+     <p class="muted">รายการที่มีผลตรวจสอบอย่างน้อยหนึ่งหัวข้อไม่ผ่าน สามารถเปิดดูและแก้ไขผลตรวจสอบได้</p>
+     <div class="list" id="reviewFailedList"></div>
+    </section>
     <section class="card hidden" id="tab-approval">
      <h2>
       พิจารณาและอนุมัติผล
@@ -618,9 +628,9 @@ function dateText(v) { if (!v)
   </script>
   <script>
    const $ = id => document.getElementById(id);
-const STATUS = ['รอตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'];
+const STATUS = ['รอตรวจสอบ', 'ไม่ผ่านการตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'];
 const CHECKS = [
-  'การกำหนดรหัสผู้สมัคร', 'มีอายุตามกำหนด',
+'มีอายุตามกำหนด',
   'ไม่เป็นผู้ดำรงตำแหน่งทางการเมือง', 'ไม่เป็นบุคคลล้มละลาย',
   'ไม่เป็นบุคคลต้องโทษหรือต้องคำพิพากษา', 'รูปถ่าย',
   'วุฒิการศึกษา', 'ผลการเรียน', 'ทะเบียนบ้านและบัตรประชาชน',
@@ -752,6 +762,7 @@ $('birthDate').max = new Date().toISOString().slice(0, 10);
 
 function stageOf(record) {
   if (['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(record.Status)) return record.Status;
+  if (record.ReviewStatus === 'ไม่ผ่านการตรวจสอบ') return 'ไม่ผ่านการตรวจสอบ';
   return record.ReviewStatus === 'ตรวจสอบแล้ว' ? 'รอการอนุมัติ' : 'รอตรวจสอบข้อมูล';
 }
 
@@ -766,6 +777,7 @@ async function tab(name) {
   if (name === 'summary') await loadSummary();
   if (name === 'applications') await loadList();
   if (name === 'review') await loadReview();
+  if (name === 'reviewFailed') await loadReviewFailed();
   if (name === 'approval') await loadApproval();
 }
 document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => tab(b.dataset.tab));
@@ -872,6 +884,19 @@ async function loadReview() {
   } catch (err) { msg(err.message); }
 }
 
+async function loadReviewFailed() {
+  msg('กำลังโหลดรายการไม่ผ่านการตรวจสอบ...');
+  try {
+    const result = await fetchAllApplications({ stage: 'reviewFailed' });
+    const items = result.items || [];
+    $('reviewFailedList').replaceChildren(...items.map(record => itemButton(record, 'review')));
+    if (!items.length) $('reviewFailedList').innerHTML = '<p class="muted">ไม่มีรายการไม่ผ่านการตรวจสอบ</p>';
+    msg('');
+  } catch (error) {
+    msg(error.message);
+  }
+}
+
 async function loadApproval() {
   msg('กำลังโหลดรายการอนุมัติ...');
   try {
@@ -897,7 +922,6 @@ function detailFields(record) {
     ['สัญชาติ', record.Nationality], ['เชื้อชาติ', record.Ethnicity],
     ['ภูมิภาค', record.Region], ['จังหวัด', record.Province],
     ['ระดับการศึกษา', record.Education], ['เบอร์โทรศัพท์', record.Phone],
-    ['วันที่ลงทะเบียน', dateText(record.CreatedAt)],
     ['ขั้นตอนปัจจุบัน', stageOf(record)], ['ผลการสมัคร', record.Status],
     ['เหตุผลการพิจารณา', record.DecisionReason || record.AdminNote]
   ];
@@ -918,7 +942,7 @@ async function openRecord(id, mode) {
     if (mode === 'review') renderReview(r);
     if (mode === 'approval' && r.ReviewStatus === 'ตรวจสอบแล้ว') renderApproval(r);
     if (mode === 'detail') {
-      if (r.ReviewStatus === 'ตรวจสอบแล้ว') renderReview(r);
+      renderReview(r);
       if (r.ReviewStatus === 'ตรวจสอบแล้ว') renderApproval(r);
     }
   } catch (err) {
@@ -940,7 +964,7 @@ function renderReview(record) {
   });
   const button = document.createElement('button');
   button.className = 'orange';
-  button.textContent = 'ยืนยันการตรวจสอบและส่งไปการอนุมัติ';
+  button.textContent = 'บันทึกผลการตรวจสอบ';
   button.onclick = async () => {
     const results = {};
     CHECKS.forEach((name, i) => {
@@ -952,10 +976,15 @@ function renderReview(record) {
     }
     button.disabled = true;
     try {
-      await api('saveReview', { applicationId: record.ApplicationID, checks: results });
+      const result = await api('saveReview', { applicationId: record.ApplicationID, checks: results });
       closeModal();
-      tab('review');
-      msg('ตรวจสอบสำเร็จ รายชื่อย้ายไปหน้าการอนุมัติแล้ว');
+      if (result.reviewStatus === 'ตรวจสอบแล้ว') {
+        await tab('approval');
+        msg('ผ่านการตรวจสอบครบทุกหัวข้อ ส่งเข้าหน้าการอนุมัติแล้ว');
+      } else {
+        await tab('reviewFailed');
+        msg('มีหัวข้อไม่ผ่าน ส่งเข้าหน้าไม่ผ่านการตรวจสอบแล้ว');
+      }
     } catch (err) { alert(err.message); }
     finally { button.disabled = false; }
   };

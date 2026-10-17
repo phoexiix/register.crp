@@ -3,9 +3,8 @@ const CRP = Object.freeze({
   applications: 'Applications',
   audit: 'AuditLog',
   sessionSeconds: 21600,
-  statuses: ['รอตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'],
+  statuses: ['รอตรวจสอบ', 'ไม่ผ่านการตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'],
   checks: [
-    'การกำหนดรหัสผู้สมัคร',
     'มีอายุตามกำหนด',
     'ไม่เป็นผู้ดำรงตำแหน่งทางการเมือง',
     'ไม่เป็นบุคคลล้มละลาย',
@@ -34,6 +33,7 @@ function setup() {
   if (!ss) throw new Error('ต้องเปิด Apps Script จาก Google Sheets ผ่าน Extensions > Apps Script');
   ensureSheet_(ss, CRP.applications, HEADERS);
   ensureSheet_(ss, CRP.audit, AUDIT_HEADERS);
+  migrateReviewStatuses_();
   return 'เตรียมระบบ CRP สำเร็จ (ข้อมูลเดิมยังอยู่)';
 }
 
@@ -144,7 +144,6 @@ function publicView_(r) {
     province: r.Province,
     region: r.Region,
     education: r.Education,
-    registeredAt: r.CreatedAt,
     registration: 'ลงทะเบียนสำเร็จ',
     status: r.Status,
     reviewStatus: r.ReviewStatus || 'รอตรวจสอบ'
@@ -158,7 +157,8 @@ function getApplications_(p) {
   const stage = clean_(p.stage, 30);
   const rows = allRows_().filter(r => {
     const match = !query || normalize_(r.ApplicationID + ' ' + r.Prefix + ' ' + r.FirstName + ' ' + r.LastName).includes(query);
-    if (stage === 'review') return match && r.ReviewStatus !== 'ตรวจสอบแล้ว';
+    if (stage === 'review') return match && !['ตรวจสอบแล้ว', 'ไม่ผ่านการตรวจสอบ'].includes(r.ReviewStatus);
+    if (stage === 'reviewFailed') return match && r.ReviewStatus === 'ไม่ผ่านการตรวจสอบ';
     if (stage === 'approval') return match && r.ReviewStatus === 'ตรวจสอบแล้ว' && !['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(r.Status);
     return match;
   });
@@ -227,20 +227,22 @@ function saveReview_(p) {
     if (!allowed.includes(value)) throw new Error('กรุณาตรวจสอบหัวข้อ: ' + name);
     result[name] = value;
   });
+  const passed = CRP.checks.every(name => result[name] === 'ผ่าน' || (name === 'หนังสืออนุมัติ' && result[name] === 'ไม่ระบุ'));
+  const reviewStatus = passed ? 'ตรวจสอบแล้ว' : 'ไม่ผ่านการตรวจสอบ';
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
     const match = findRow_(id);
     if (!match) throw new Error('ไม่พบข้อมูลผู้สมัคร');
     const record = Object.assign({}, match.record, {
-      ReviewStatus: 'ตรวจสอบแล้ว',
+      ReviewStatus: reviewStatus,
       ReviewData: JSON.stringify(result),
-      Status: ['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(match.record.Status) ? match.record.Status : 'อยู่ระหว่างพิจารณา',
+      Status: passed ? 'อยู่ระหว่างพิจารณา' : 'ไม่ผ่านการตรวจสอบ',
       UpdatedAt: new Date().toISOString()
     });
     writeRecord_(match, record);
-    log_('review', id, admin, 'ตรวจสอบแล้ว');
-    return { success: true, applicationId: id, record: record };
+    log_('review', id, admin, reviewStatus);
+    return { success: true, applicationId: id, reviewStatus: reviewStatus, record: record };
   } finally {
     lock.releaseLock();
   }
@@ -417,4 +419,29 @@ function safeCell_(value) {
 function sha256_(str) {
   return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, str, Utilities.Charset.UTF_8)
     .map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
+}
+
+// ปรับข้อมูลการตรวจสอบเดิมให้ตรงกับกติกาใหม่ โดยไม่ลบข้อมูลผู้สมัคร
+function migrateReviewStatuses_() {
+  const sh = sheet_();
+  const last = sh.getLastRow();
+  if (last < 2) return;
+  const values = sh.getRange(2, 1, last - 1, HEADERS.length).getDisplayValues();
+  const reviewIndex = HEADERS.indexOf('ReviewStatus');
+  const dataIndex = HEADERS.indexOf('ReviewData');
+  const statusIndex = HEADERS.indexOf('Status');
+  for (let i = 0; i < values.length; i++) {
+    const row = values[i];
+    if (row[reviewIndex] !== 'ตรวจสอบแล้ว' && row[reviewIndex] !== 'ไม่ผ่านการตรวจสอบ') continue;
+    let checks;
+    try { checks = JSON.parse(row[dataIndex] || '{}'); } catch (error) { continue; }
+    const allAnswered = CRP.checks.every(name => ['ผ่าน', 'ไม่ผ่าน'].includes(checks[name]) || (name === 'หนังสืออนุมัติ' && checks[name] === 'ไม่ระบุ'));
+    if (!allAnswered) continue;
+    const passed = CRP.checks.every(name => checks[name] === 'ผ่าน' || (name === 'หนังสืออนุมัติ' && checks[name] === 'ไม่ระบุ'));
+    const newReview = passed ? 'ตรวจสอบแล้ว' : 'ไม่ผ่านการตรวจสอบ';
+    if (row[reviewIndex] !== newReview) sh.getRange(i + 2, reviewIndex + 1).setValue(newReview);
+    if (!passed && !['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(row[statusIndex])) {
+      sh.getRange(i + 2, statusIndex + 1).setValue('ไม่ผ่านการตรวจสอบ');
+    }
+  }
 }
