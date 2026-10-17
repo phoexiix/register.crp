@@ -1,0 +1,22 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>CRP Connector</title></head><body>
+<script>
+(function(){
+'use strict';
+const origin = <?!= JSON.stringify(bridgeOrigin) ?>;
+const channel = <?!= JSON.stringify(bridgeChannel) ?>;
+const actions = new Set(['ping','publicSearch','publicDetails','login','logout','getApplications','getApplication','addApplication','updateApplication','saveReview','setApplicationStatus','getSummary','getConfig']);
+if (!/^https:\/\/[^/]+$/.test(origin) || !channel) return;
+function send(data){window.parent.postMessage(Object.assign({crpBridge:true,channel},data),origin);}
+window.addEventListener('message',function(e){
+ if(e.source!==window.parent || e.origin!==origin) return;
+ const m=e.data;
+ if(!m || m.crpBridge!==true || m.channel!==channel) return;
+ if(m.type==='hello'){send({type:'ready'});return;}
+ if(m.type!=='request' || typeof m.id!=='string' || !actions.has(m.action))return;
+ google.script.run.withSuccessHandler(function(result){send({type:'response',id:m.id,ok:true,result});})
+ .withFailureHandler(function(err){send({type:'response',id:m.id,ok:false,error:err&&err.message||'การเชื่อมต่อล้มเหลว'});})
+ .apiRequest(m.action,m.payload||{});
+});
+send({type:'ready'});
+})();
+</script></body></html>
