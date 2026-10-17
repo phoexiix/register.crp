@@ -836,6 +836,33 @@ function itemButton(record, mode) {
   return button;
 }
 
+/** Queue rows show only the identifiers needed to manage an approval. */
+function managementItem(record, mode) {
+  const line = document.createElement('div');
+  line.className = 'item';
+
+  const name = [record.Prefix, record.FirstName, record.LastName]
+    .filter(Boolean)
+    .join(' ');
+  const actionLabel = mode === 'review'
+    ? 'แก้ไขผลตรวจสอบ'
+    : 'จัดการอนุมัติ';
+
+  line.innerHTML = `
+    <span>
+      <strong>${esc(name)}</strong>
+      <small class="muted"> (${esc(record.ApplicationID)})</small>
+    </span>
+    <button class="orange" type="button">${actionLabel}</button>
+  `;
+
+  line.querySelector('button').addEventListener('click', () => {
+    openRecord(record.ApplicationID, mode);
+  });
+
+  return line;
+}
+
 async function fetchAllApplications(filters = {}) {
   const items = [];
   const limit = 200;
@@ -889,7 +916,7 @@ async function loadReviewFailed() {
   try {
     const result = await fetchAllApplications({ stage: 'reviewFailed' });
     const items = result.items || [];
-    $('reviewFailedList').replaceChildren(...items.map(record => itemButton(record, 'review')));
+    $('reviewFailedList').replaceChildren(...items.map(record => managementItem(record, 'review')));
     if (!items.length) $('reviewFailedList').innerHTML = '<p class="muted">ไม่มีรายการไม่ผ่านการตรวจสอบ</p>';
     msg('');
   } catch (error) {
@@ -901,7 +928,7 @@ async function loadApproval() {
   msg('กำลังโหลดรายการอนุมัติ...');
   try {
     const r = await fetchAllApplications({ stage: 'approval', query: $('approvalFind').value.trim() });
-    $('approvalList').replaceChildren(...(r.items || []).map(x => itemButton(x, 'approval')));
+    $('approvalList').replaceChildren(...(r.items || []).map(x => managementItem(x, 'approval')));
     msg('');
   } catch (err) { msg(err.message); }
 }
@@ -930,23 +957,54 @@ function detailFields(record) {
   return entries.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v || '-')}</dd>`).join('');
 }
 
+/**
+ * Detailed applicant history is shown only in the applicant-list tab.
+ * Verification and approval tabs open a task-specific management panel.
+ */
 async function openRecord(id, mode) {
   $('overlay').classList.remove('hidden');
-  $('modalTitle').textContent = 'รายละเอียดผู้สมัคร';
   $('modalBody').textContent = 'กำลังโหลด...';
+  $('modalTitle').textContent = mode === 'review'
+    ? 'จัดการผลการตรวจสอบ'
+    : mode === 'approval'
+      ? 'จัดการอนุมัติ'
+      : 'รายละเอียดผู้สมัคร';
+
   try {
-    const r = await api('getApplication', { applicationId: id });
-    $('modalTitle').textContent = r.ApplicationID;
-    $('modalBody').innerHTML = `<dl>${detailFields(r)}</dl><div class="actions"><button id="editRecord" class="ghost">แก้ไขข้อมูล</button></div>`;
-    $('editRecord').onclick = () => editRecord(r);
-    if (mode === 'review') renderReview(r);
-    if (mode === 'approval' && r.ReviewStatus === 'ตรวจสอบแล้ว') renderApproval(r);
+    const record = await api('getApplication', { applicationId: id });
+    const name = [record.Prefix, record.FirstName, record.LastName]
+      .filter(Boolean)
+      .join(' ');
+
     if (mode === 'detail') {
-      renderReview(r);
-      if (r.ReviewStatus === 'ตรวจสอบแล้ว') renderApproval(r);
+      $('modalTitle').textContent = 'รายละเอียดผู้สมัคร';
+      $('modalBody').innerHTML = `
+        <dl>${detailFields(record)}</dl>
+        <div class="actions">
+          <button id="editRecord" class="ghost" type="button">แก้ไขข้อมูลผู้สมัคร</button>
+        </div>
+      `;
+      $('editRecord').onclick = () => editRecord(record);
+      return;
     }
-  } catch (err) {
-    $('modalBody').textContent = err.message;
+
+    // Management-only views: no date of birth, personal history, or profile fields.
+    $('modalBody').innerHTML = `
+      <p class="muted">รหัสผู้สมัคร: <strong>${esc(record.ApplicationID)}</strong></p>
+      <h3>${esc(name)}</h3>
+    `;
+
+    if (mode === 'review') {
+      renderReview(record);
+    } else if (mode === 'approval') {
+      if (record.ReviewStatus !== 'ตรวจสอบแล้ว') {
+        $('modalBody').innerHTML += '<p class="message">รายการนี้ยังไม่ผ่านการตรวจสอบข้อมูลครบทุกหัวข้อ</p>';
+        return;
+      }
+      renderApproval(record);
+    }
+  } catch (error) {
+    $('modalBody').textContent = error.message;
   }
 }
 
@@ -1046,7 +1104,6 @@ function editRecord(record) {
 function resetForm() {
   $('applicationForm').reset();
   editing = '';
-  updateProvinceOptions(false);
   updateProvinceOptions(false);
   updateAge();
   $('formTitle').textContent = 'เพิ่มข้อมูลผู้สมัคร';
