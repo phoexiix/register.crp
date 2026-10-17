@@ -1,0 +1,19 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>CRP Bridge</title></head><body>
+<script>
+(function(){
+ 'use strict';
+ const origin=<?!= JSON.stringify(origin) ?>,channel=<?!= JSON.stringify(channel) ?>;
+ const allowed=new Set(['publicList','login','logout','submit','list','update','stats']);
+ function tell(message){parent.postMessage(Object.assign({crpBridge:true,channel},message),origin);}
+ window.addEventListener('message',function(event){
+  if(event.source!==parent||event.origin!==origin)return;
+  const p=event.data;
+  if(!p||p.crpBridge!==true||p.channel!==channel||typeof p.id!=='string')return;
+  if(!p.payload||!allowed.has(p.payload.action)){tell({id:p.id,result:{ok:false,error:'Invalid action'}});return;}
+  google.script.run.withSuccessHandler(r=>tell({id:p.id,result:r}))
+   .withFailureHandler(e=>tell({id:p.id,result:{ok:false,error:e.message||'Server error'}}))
+   .bridgeDispatch(p.payload);
+ });
+ tell({ready:true});
+})();
+</script></body></html>
