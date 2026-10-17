@@ -337,7 +337,8 @@ footer {
       <button data-tab="applications">
        รายชื่อผู้สมัคร
       </button>
-      <button data-tab="add">
+      <button data-tab="review">ตรวจสอบข้อมูล</button>
+       <button data-tab="add">
        เพิ่มข้อมูลผู้สมัคร
       </button>
       <button data-tab="approval">
@@ -383,114 +384,40 @@ footer {
      <h2 id="formTitle">
       เพิ่มข้อมูลผู้สมัคร
      </h2>
-     <form id="applicationForm">
-      <div class="grid">
-       <div>
-        <label>
-         คำนำหน้าชื่อ
-        </label>
-        <select name="prefix">
-         <option value="">
-          เลือกคำนำหน้า
-         </option>
-         <option>
-          นาย
-         </option>
-         <option>
-          นาง
-         </option>
-         <option>
-          นางสาว
-         </option>
-         <option>
-          อื่น ๆ
-         </option>
-        </select>
-       </div>
-       <div>
-        <label>
-         วันเกิด
-        </label>
-        <input name="birthDate" type="date"/>
-       </div>
-       <div>
-        <label>
-         ชื่อ *
-        </label>
-        <input maxlength="100" name="firstName" required=""/>
-       </div>
-       <div>
-        <label>
-         นามสกุล *
-        </label>
-        <input maxlength="100" name="lastName" required=""/>
-       </div>
-       <div>
-        <label>
-         เบอร์โทรศัพท์
-        </label>
-        <input name="phone" type="tel"/>
-       </div>
-       <div>
-        <label>
-         อีเมล
-        </label>
-        <input name="email" type="email"/>
-       </div>
-       <div>
-        <label>
-         จังหวัด
-        </label>
-        <input name="province"/>
-       </div>
-       <div>
-        <label>
-         ระดับการศึกษา
-        </label>
-        <select name="education">
-         <option value="">
-          เลือกระดับการศึกษา
-         </option>
-         <option>
-          ประถมศึกษา
-         </option>
-         <option>
-          มัธยมศึกษาตอนต้น
-         </option>
-         <option>
-          มัธยมศึกษาตอนปลาย/ปวช.
-         </option>
-         <option>
-          อนุปริญญา/ปวส.
-         </option>
-         <option>
-          ปริญญาตรี
-         </option>
-         <option>
-          สูงกว่าปริญญาตรี
-         </option>
-         <option>
-          อื่น ๆ
-         </option>
-        </select>
-       </div>
-      </div>
-      <p>
-       <label>
-        เหตุผลหรือข้อมูลประกอบการสมัคร
-       </label>
-       <textarea name="motivation" rows="4"></textarea>
-      </p>
-      <div class="actions">
-       <button class="orange" id="saveBtn" type="submit">
-        บันทึกผู้สมัคร
-       </button>
-       <button class="ghost" id="resetBtn" type="button">
-        ล้างแบบฟอร์ม
-       </button>
-      </div>
-     </form>
-    </section>
+           <form id="applicationForm">
+        <div class="grid">
+          <div><label>คำนำหน้าชื่อ *</label><select name="prefix" required>
+            <option value="">เลือกคำนำหน้า</option><option>นาย</option><option>นาง</option>
+            <option>นางสาว</option><option>อื่น ๆ</option>
+          </select></div>
+          <div><label>วันเดือนปีเกิด *</label><input name="birthDate" id="birthDate" type="date" required></div>
+          <div><label>ชื่อ *</label><input name="firstName" maxlength="100" required></div>
+          <div><label>นามสกุล *</label><input name="lastName" maxlength="100" required></div>
+          <div><label>อายุ (คำนวณอัตโนมัติ)</label><input id="ageDisplay" readonly placeholder="เลือกวันเกิดก่อน"></div>
+          <div><label>สัญชาติ *</label><select name="nationality" required>
+            <option value="">เลือกสัญชาติ</option><option>ไทย</option><option>ลาว</option>
+            <option>เมียนมา</option><option>กัมพูชา</option><option>มาเลเซีย</option>
+            <option>อื่น ๆ</option>
+          </select></div>
+          <div><label>เชื้อชาติ *</label><select name="ethnicity" required>
+            <option value="">เลือกเชื้อชาติ</option><option>ไทย</option><option>จีน</option>
+            <option>ลาว</option><option>มอญ</option><option>มลายู</option><option>อื่น ๆ</option>
+          </select></div>
+          <div><label>ระดับการศึกษา *</label><select name="education" required>
+            <option value="">เลือกระดับการศึกษา</option><option>ประถมศึกษา</option>
+            <option>มัธยมศึกษาตอนต้น</option><option>มัธยมศึกษาตอนปลาย/ปวช.</option>
+            <option>อนุปริญญา/ปวส.</option><option>ปริญญาตรี</option>
+            <option>สูงกว่าปริญญาตรี</option><option>อื่น ๆ</option>
+          </select></div>
+          <div><label>เบอร์โทรศัพท์ (10 หลัก) *</label>
+            <input name="phone" type="tel" inputmode="numeric" maxlength="10" minlength="10" pattern="[0-9]{10}" required placeholder="0812345678">
+          </div>
+        </div>
+        <div class="actions">
+          <button class="orange" id="saveBtn" type="submit">บันทึกผู้สมัคร</button>
+          <button class="ghost" id="resetBtn" type="button">ล้างแบบฟอร์ม</button>
+        </div>
+      </form>/section>
     <section class="card hidden" id="tab-approval">
      <h2>
       พิจารณาและอนุมัติผล
@@ -535,120 +462,300 @@ function dateText(v) { if (!v)
     return '-'; const d = new Date(v); return Number.isNaN(d.getTime()) ? esc(v) : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }); }
   </script>
   <script>
-   const $ = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
 const STATUS = ['รอตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'];
-let token = '', editing = '', rows = [];
-const msg = t => $('appMsg').textContent = t || '';
-function session() { return { token }; }
-function tab(name) { document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === name)); document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.toggle('hidden', el.id !== 'tab-' + name)); msg(''); if (name === 'summary')
-    loadSummary(); if (name === 'applications')
-    loadList(); if (name === 'approval')
-    loadApproval(); }
+const CHECKS = [
+  'การกำหนดรหัสผู้สมัคร', 'มีอายุตามกำหนด',
+  'ไม่เป็นผู้ดำรงตำแหน่งทางการเมือง', 'ไม่เป็นบุคคลล้มละลาย',
+  'ไม่เป็นบุคคลต้องโทษหรือต้องคำพิพากษา', 'รูปถ่าย',
+  'วุฒิการศึกษา', 'ผลการเรียน', 'ทะเบียนบ้านและบัตรประชาชน',
+  'สำเนาข้อมูลครอบครัว', 'หนังสืออนุมัติ'
+];
+
+let token = '';
+let editing = '';
+let rows = [];
+const msg = text => { $('appMsg').textContent = text || ''; };
+const session = () => ({ token });
+
+async function api(action, payload = {}) {
+  return CRP_API.call(action, { ...payload, ...session() });
+}
+
+function ageFromDate(value) {
+  if (!value) return '';
+  const parts = value.split('-').map(Number);
+  if (parts.length !== 3) return '';
+  const now = new Date();
+  let age = now.getFullYear() - parts[0];
+  if (now.getMonth() + 1 < parts[1] ||
+      (now.getMonth() + 1 === parts[1] && now.getDate() < parts[2])) age--;
+  return age >= 0 ? String(age) + ' ปี' : '';
+}
+
+function updateAge() {
+  $('ageDisplay').value = ageFromDate($('birthDate').value);
+}
+$('birthDate').addEventListener('change', updateAge);
+$('birthDate').max = new Date().toISOString().slice(0, 10);
+
+function stageOf(record) {
+  if (['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(record.Status)) return record.Status;
+  return record.ReviewStatus === 'ตรวจสอบแล้ว' ? 'รอการอนุมัติ' : 'รอตรวจสอบข้อมูล';
+}
+
+function tab(name) {
+  document.querySelectorAll('[data-tab]').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  document.querySelectorAll('[id^="tab-"]').forEach(el => {
+    el.classList.toggle('hidden', el.id !== 'tab-' + name);
+  });
+  msg('');
+  if (name === 'summary') loadSummary();
+  if (name === 'applications') loadList();
+  if (name === 'review') loadReview();
+  if (name === 'approval') loadApproval();
+}
 document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => tab(b.dataset.tab));
-async function api(action, payload = {}) { return CRP_API.call(action, { ...payload, ...session() }); }
-async function login(e) { e.preventDefault(); $('loginMsg').textContent = 'กำลังเข้าสู่ระบบ...'; try {
-    const r = await CRP_API.call('login', { username: $('username').value.trim(), password: $('password').value });
+
+$('loginForm').onsubmit = async e => {
+  e.preventDefault();
+  $('loginMsg').textContent = 'กำลังเข้าสู่ระบบ...';
+  try {
+    const r = await CRP_API.call('login', {
+      username: $('username').value.trim(),
+      password: $('password').value
+    });
     token = r.token;
     $('password').value = '';
     $('loginView').classList.add('hidden');
     $('appView').classList.remove('hidden');
     $('loginMsg').textContent = '';
     tab('summary');
-}
-catch (err) {
+  } catch (err) {
     $('loginMsg').textContent = err.message;
-} }
-$('loginForm').onsubmit = login;
-$('logout').onclick = async () => { try {
-    await api('logout');
-}
-catch (e) { } token = ''; editing = ''; $('appView').classList.add('hidden'); $('loginView').classList.remove('hidden'); $('loginMsg').textContent = 'ออกจากระบบแล้ว'; };
-async function loadSummary() { msg('กำลังโหลดสรุปผล...'); try {
+  }
+};
+
+$('logout').onclick = async () => {
+  try { await api('logout'); } catch (_) {}
+  token = '';
+  editing = '';
+  $('appView').classList.add('hidden');
+  $('loginView').classList.remove('hidden');
+  $('loginMsg').textContent = 'ออกจากระบบแล้ว';
+};
+
+async function loadSummary() {
+  msg('กำลังโหลดสรุปผล...');
+  try {
     const r = await api('getSummary');
-    $('stats').innerHTML = [['ผู้สมัครทั้งหมด', r.total], ...STATUS.map(s => [s, (r.byStatus || {})[s] || 0])].map(([k, v]) => `<div class="stat"><span>${esc(k)}</span><strong>${Number(v) || 0}</strong></div>`).join('');
-    $('provinces').innerHTML = Object.entries(r.byProvince || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div class="item"><span>${esc(k)}</span><strong>${v}</strong></div>`).join('') || '<p class="muted">ยังไม่มีข้อมูล</p>';
-    $('latest').innerHTML = (r.latest || []).map(x => `<div class="item"><span>${esc(x.fullName)}<br><small>${esc(x.applicationId)}</small></span><span class="pill">${esc(x.status)}</span></div>`).join('') || '<p class="muted">ยังไม่มีข้อมูล</p>';
+    $('stats').innerHTML = [['ผู้สมัครทั้งหมด', r.total], ...STATUS.map(s => [s, (r.byStatus || {})[s] || 0])]
+      .map(([k, v]) => `<div class="stat"><span>${esc(k)}</span><strong>${Number(v) || 0}</strong></div>`).join('');
+    $('provinces').innerHTML = Object.entries(r.byProvince || {})
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, v]) => `<div class="item"><span>${esc(k)}</span><strong>${Number(v)}</strong></div>`).join('')
+      || '<p class="muted">ยังไม่มีข้อมูล</p>';
+    $('latest').innerHTML = (r.latest || [])
+      .map(x => `<div class="item"><span>${esc(x.fullName)}<br><small>${esc(x.applicationId)}</small></span><span class="pill">${esc(x.status)}</span></div>`)
+      .join('') || '<p class="muted">ยังไม่มีข้อมูล</p>';
     msg('');
+  } catch (err) { msg(err.message); }
 }
-catch (e) {
-    msg(e.message);
-} }
-function itemButton(x, mode) { const b = document.createElement('button'); b.className = 'item'; const name = x.fullName || [x.Prefix, x.FirstName, x.LastName].filter(Boolean).join(' '); const id = x.applicationId || x.ApplicationID; b.innerHTML = `<span><strong>${esc(name)}</strong><br><small class="muted">${esc(id)}</small></span><span class="pill">${esc(x.Status || x.status)}</span>`; b.onclick = () => openRecord(id, mode); return b; }
-async function loadList() { msg('กำลังโหลดรายชื่อ...'); try {
+
+function itemButton(record, mode) {
+  const button = document.createElement('button');
+  const name = [record.Prefix, record.FirstName, record.LastName].filter(Boolean).join(' ');
+  button.className = 'item';
+  button.innerHTML = `<span><strong>${esc(name)}</strong><br><small class="muted">${esc(record.ApplicationID)}</small></span><span class="pill">${esc(stageOf(record))}</span>`;
+  button.onclick = () => openRecord(record.ApplicationID, mode);
+  return button;
+}
+
+async function loadList() {
+  msg('กำลังโหลดรายชื่อ...');
+  try {
     const r = await api('getApplications', { query: $('find').value.trim() });
     rows = r.items || [];
     $('count').textContent = `พบ ${r.total} รายการ (แสดงสูงสุด 500 รายการ)`;
     $('appList').replaceChildren(...rows.map(x => itemButton(x, 'detail')));
     msg('');
+  } catch (err) { msg(err.message); }
 }
-catch (e) {
-    msg(e.message);
-} }
-async function loadApproval() { msg('กำลังโหลดข้อมูลอนุมัติ...'); try {
-    const r = await api('getApplications', { query: $('approvalFind').value.trim() });
+
+async function loadReview() {
+  msg('กำลังโหลดรายการตรวจสอบ...');
+  try {
+    const r = await api('getApplications', { stage: 'review' });
+    $('reviewList').replaceChildren(...(r.items || []).map(x => itemButton(x, 'review')));
+    msg('');
+  } catch (err) { msg(err.message); }
+}
+
+async function loadApproval() {
+  msg('กำลังโหลดรายการอนุมัติ...');
+  try {
+    const r = await api('getApplications', { stage: 'approval', query: $('approvalFind').value.trim() });
     $('approvalList').replaceChildren(...(r.items || []).map(x => itemButton(x, 'approval')));
     msg('');
+  } catch (err) { msg(err.message); }
 }
-catch (e) {
-    msg(e.message);
-} }
+
 $('findForm').onsubmit = e => { e.preventDefault(); loadList(); };
 $('approvalFindForm').onsubmit = e => { e.preventDefault(); loadApproval(); };
-function fields(r) { return [['รหัสผู้สมัคร', r.ApplicationID], ['ชื่อ-นามสกุล', [r.Prefix, r.FirstName, r.LastName].filter(Boolean).join(' ')], ['วันเกิด', r.BirthDate], ['โทรศัพท์', r.Phone], ['อีเมล', r.Email], ['จังหวัด', r.Province], ['การศึกษา', r.Education], ['ข้อมูลประกอบการสมัคร', r.Motivation], ['วันที่สมัคร', dateText(r.CreatedAt)], ['สถานะ', r.Status], ['หมายเหตุเจ้าหน้าที่', r.AdminNote]].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v || '-')}</dd>`).join(''); }
-async function openRecord(id, mode) { $('overlay').classList.remove('hidden'); $('modalBody').textContent = 'กำลังโหลด...'; try {
+
+function parseReview(record) {
+  try { return JSON.parse(record.ReviewData || '{}') || {}; }
+  catch (_) { return {}; }
+}
+
+function detailFields(record) {
+  const entries = [
+    ['รหัสผู้สมัคร', record.ApplicationID],
+    ['คำนำหน้า', record.Prefix], ['ชื่อ', record.FirstName], ['นามสกุล', record.LastName],
+    ['วันเดือนปีเกิด', record.BirthDate], ['อายุ', ageFromDate(record.BirthDate)],
+    ['สัญชาติ', record.Nationality], ['เชื้อชาติ', record.Ethnicity],
+    ['ระดับการศึกษา', record.Education], ['เบอร์โทรศัพท์', record.Phone],
+    ['วันที่ลงทะเบียน', dateText(record.CreatedAt)],
+    ['ขั้นตอนปัจจุบัน', stageOf(record)], ['ผลการสมัคร', record.Status],
+    ['เหตุผลการพิจารณา', record.DecisionReason || record.AdminNote]
+  ];
+  const checks = parseReview(record);
+  CHECKS.forEach(name => entries.push([name, checks[name] || 'ยังไม่ตรวจสอบ']));
+  return entries.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v || '-')}</dd>`).join('');
+}
+
+async function openRecord(id, mode) {
+  $('overlay').classList.remove('hidden');
+  $('modalTitle').textContent = 'รายละเอียดผู้สมัคร';
+  $('modalBody').textContent = 'กำลังโหลด...';
+  try {
     const r = await api('getApplication', { applicationId: id });
     $('modalTitle').textContent = r.ApplicationID;
-    $('modalBody').innerHTML = `<dl>${fields(r)}</dl><div class="actions"><button id="editRecord" class="ghost">แก้ไขข้อมูล</button></div>`;
+    $('modalBody').innerHTML = `<dl>${detailFields(r)}</dl><div class="actions"><button id="editRecord" class="ghost">แก้ไขข้อมูล</button></div>`;
     $('editRecord').onclick = () => editRecord(r);
-    if (mode === 'approval' || mode === 'detail') {
-        const area = document.createElement('div');
-        area.className = 'card';
-        area.innerHTML = `<h3>พิจารณาผลการสมัคร</h3><label>สถานะ</label><select id="statusSelect">${STATUS.map(s => `<option ${r.Status === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select><p><label>หมายเหตุภายใน</label><textarea id="statusNote" rows="3">${esc(r.AdminNote || '')}</textarea></p><button id="statusSave" class="orange">บันทึกผลการพิจารณา</button>`;
-        $('modalBody').append(area);
-        $('statusSave').onclick = async () => { const b = $('statusSave'); b.disabled = true; try {
-            await api('setApplicationStatus', { applicationId: id, status: $('statusSelect').value, note: $('statusNote').value });
-            closeModal();
-            if (!$('tab-approval').classList.contains('hidden'))
-                await loadApproval();
-            else
-                await loadList();
-            msg('บันทึกผลการพิจารณาสำเร็จ');
-        }
-        catch (e) {
-            alert(e.message);
-        }
-        finally {
-            b.disabled = false;
-        } };
-    }
+    if (mode === 'review' && r.ReviewStatus !== 'ตรวจสอบแล้ว') renderReview(r);
+    if (mode === 'approval' && r.ReviewStatus === 'ตรวจสอบแล้ว') renderApproval(r);
+  } catch (err) {
+    $('modalBody').textContent = err.message;
+  }
 }
-catch (e) {
-    $('modalBody').textContent = e.message;
-} }
-function editRecord(r) { editing = r.ApplicationID; const f = $('applicationForm'); for (const [key, val] of Object.entries({ prefix: r.Prefix, firstName: r.FirstName, lastName: r.LastName, birthDate: r.BirthDate, phone: r.Phone, email: r.Email, province: r.Province, education: r.Education, motivation: r.Motivation })) {
-    if (f.elements.namedItem(key))
-        f.elements.namedItem(key).value = val || '';
-} $('formTitle').textContent = 'แก้ไขข้อมูล ' + editing; $('saveBtn').textContent = 'บันทึกการแก้ไข'; closeModal(); tab('add'); }
-function resetForm() { $('applicationForm').reset(); editing = ''; $('formTitle').textContent = 'เพิ่มข้อมูลผู้สมัคร'; $('saveBtn').textContent = 'บันทึกผู้สมัคร'; }
+
+function renderReview(record) {
+  const checks = parseReview(record);
+  const section = document.createElement('section');
+  section.className = 'card';
+  section.innerHTML = `<h3>รายการตรวจสอบข้อมูล</h3><p class="muted">เลือกผลตรวจสอบให้ครบทุกหัวข้อ</p>`;
+  CHECKS.forEach((name, index) => {
+    const line = document.createElement('div');
+    line.style.marginBottom = '15px';
+    const options = name === 'หนังสืออนุมัติ' ? ['ผ่าน', 'ไม่ผ่าน', 'ไม่ระบุ'] : ['ผ่าน', 'ไม่ผ่าน'];
+    line.innerHTML = `<label>${index + 1}. ${esc(name)}</label><select data-check="${index}"><option value="">เลือกผลตรวจสอบ</option>${options.map(v => `<option value="${esc(v)}" ${checks[name] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>`;
+    section.append(line);
+  });
+  const button = document.createElement('button');
+  button.className = 'orange';
+  button.textContent = 'ยืนยันการตรวจสอบและส่งไปการอนุมัติ';
+  button.onclick = async () => {
+    const results = {};
+    CHECKS.forEach((name, i) => {
+      results[name] = section.querySelector(`[data-check="${i}"]`).value;
+    });
+    if (Object.values(results).some(v => !v)) {
+      alert('กรุณาเลือกผลตรวจสอบให้ครบทุกหัวข้อ');
+      return;
+    }
+    button.disabled = true;
+    try {
+      await api('saveReview', { applicationId: record.ApplicationID, checks: results });
+      closeModal();
+      tab('review');
+      msg('ตรวจสอบสำเร็จ รายชื่อย้ายไปหน้าการอนุมัติแล้ว');
+    } catch (err) { alert(err.message); }
+    finally { button.disabled = false; }
+  };
+  section.append(button);
+  $('modalBody').append(section);
+}
+
+function renderApproval(record) {
+  const section = document.createElement('section');
+  section.className = 'card';
+  section.innerHTML = `<h3>อนุมัติผลการสมัคร</h3>
+    <label>ผลการสมัคร</label>
+    <select id="decisionSelect"><option value="">เลือกผลการสมัคร</option>
+      <option value="ผ่านการคัดเลือก">ผ่านการสมัคร</option>
+      <option value="ไม่ผ่านการคัดเลือก">ไม่ผ่านการสมัคร</option>
+    </select>
+    <p><label>เหตุผลการพิจารณา *</label><textarea id="decisionReason" rows="4" maxlength="2000" placeholder="ระบุเหตุผล"></textarea></p>
+    <button id="decisionSave" class="orange">บันทึกผลการอนุมัติ</button>`;
+  $('modalBody').append(section);
+  $('decisionSave').onclick = async () => {
+    const status = $('decisionSelect').value;
+    const reason = $('decisionReason').value.trim();
+    if (!status || !reason) return alert('กรุณาเลือกผลและระบุเหตุผล');
+    const button = $('decisionSave');
+    button.disabled = true;
+    try {
+      await api('setApplicationStatus', { applicationId: record.ApplicationID, status, reason });
+      closeModal();
+      tab('approval');
+      msg('บันทึกผลการอนุมัติสำเร็จ');
+    } catch (err) { alert(err.message); }
+    finally { button.disabled = false; }
+  };
+}
+
+function editRecord(record) {
+  editing = record.ApplicationID;
+  const form = $('applicationForm');
+  const data = {
+    prefix: record.Prefix, firstName: record.FirstName, lastName: record.LastName,
+    birthDate: record.BirthDate, phone: record.Phone, nationality: record.Nationality,
+    ethnicity: record.Ethnicity, education: record.Education
+  };
+  for (const [key, value] of Object.entries(data)) {
+    const input = form.elements.namedItem(key);
+    if (input) input.value = value || '';
+  }
+  updateAge();
+  $('formTitle').textContent = 'แก้ไขข้อมูล ' + editing;
+  $('saveBtn').textContent = 'บันทึกการแก้ไข';
+  closeModal();
+  tab('add');
+}
+
+function resetForm() {
+  $('applicationForm').reset();
+  editing = '';
+  updateAge();
+  $('formTitle').textContent = 'เพิ่มข้อมูลผู้สมัคร';
+  $('saveBtn').textContent = 'บันทึกผู้สมัคร';
+}
 $('resetBtn').onclick = resetForm;
-$('applicationForm').onsubmit = async (e) => { e.preventDefault(); const f = e.target; const data = Object.fromEntries(new FormData(f).entries()); const b = $('saveBtn'); b.disabled = true; msg('กำลังบันทึกข้อมูล...'); try {
+
+$('applicationForm').onsubmit = async e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  const button = $('saveBtn');
+  button.disabled = true;
+  msg('กำลังบันทึกข้อมูล...');
+  try {
     const action = editing ? 'updateApplication' : 'addApplication';
-    const r = await api(action, { applicationId: editing, application: data });
-    const id = r.applicationId || editing;
+    const response = await api(action, { applicationId: editing, application: data });
+    const id = response.applicationId || editing;
     resetForm();
     tab('applications');
     msg('บันทึกสำเร็จ รหัสผู้สมัคร: ' + id);
-}
-catch (e) {
-    msg(e.message);
-}
-finally {
-    b.disabled = false;
-} };
+  } catch (err) { msg(err.message); }
+  finally { button.disabled = false; }
+};
+
 function closeModal() { $('overlay').classList.add('hidden'); }
 $('closeModal').onclick = closeModal;
-$('overlay').onclick = e => { if (e.target === $('overlay'))
-    closeModal(); };
+$('overlay').onclick = e => { if (e.target === $('overlay')) closeModal(); };
+
   </script>
  </body>
 </html>
