@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="th">
+ <head>
+  <base target="_top"/>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <title>
+   CRP | เจ้าหน้าที่
+  </title>
+  <style>
+   * {
+  box-sizing: border-box
+}
+body {
+  margin: 0;
+  font-family: system-ui,'Segoe UI',sans-serif;
+  color: #20314b;
+  background: #f6f9ff
+}
+header {
+  background: linear-gradient(115deg,#fff,#e7f2ff);
+  border-bottom: 1px solid #dce7f6;
+  padding: 22px max(20px,calc((100vw - 1180px)/2))
+}
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px
+}
+.brand {
+  font-weight: 850;
+  font-size: 20px;
+  color: #3158ad;
+  text-decoration: none
+}
+.brand b {
+  color: #f58b35
+}
+.navlink {
+  color: #6554b7;
+  text-decoration: none;
+  font-weight: 700
+}
+main {
+  max-width: 1180px;
+  margin: 32px auto;
+  padding: 0 20px
+}
+.hero {
+  padding: 38px;
+  border-radius: 24px;
+  background: linear-gradient(115deg,#dceeff,#fff 70%);
+  border: 1px solid #d8e7fa
+}
+.hero h1 {
+  font-size: clamp(25px,4vw,42px);
+  margin: 0 0 10px
+}
+.muted {
+  color: #71809a
+}
+.card {
+  background: white;
+  border: 1px solid #e0e8f3;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 9px 25px #304f8a0b;
+  margin-top: 20px
+}
+input,select,textarea {
+  width: 100%;
+  border: 1px solid #cbd8ec;
+  border-radius: 11px;
+  padding: 12px 13px;
+  background: #fff;
+  color: #23304a;
+  font: inherit
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px
+}
+button,.btn {
+  background: #6555cb;
+  color: white;
+  border: 0;
+  border-radius: 11px;
+  padding: 12px 19px;
+  font-weight: 750;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: none;
+  display: inline-block
+}
+button:hover {
+  filter: brightness(.96)
+}
+.orange {
+  background: #f18b39
+}
+.ghost {
+  background: #e9efff;
+  color: #4257a2
+}
+.danger {
+  background: #fbe8e8;
+  color: #a43333
+}
+.search {
+  display: flex;
+  gap: 10px
+}
+.search input {
+  flex: 1
+}
+.list {
+  display: grid;
+  gap: 10px
+}
+.item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  background: #fff;
+  color: #20314b;
+  border: 1px solid #e0e8f3;
+  padding: 17px;
+  border-radius: 13px
+}
+.item:hover {
+  border-color: #8e8adf
+}
+.pill {
+  font-size: 12px;
+  background: #e8e9ff;
+  color: #6254b8;
+  border-radius: 20px;
+  padding: 6px 10px;
+  white-space: nowrap
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 16px
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
+  gap: 14px
+}
+.stat {
+  border-radius: 15px;
+  background: #f0f5ff;
+  padding: 20px
+}
+.stat strong {
+  display: block;
+  font-size: 30px;
+  color: #544db0
+}
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px
+}
+.tabs button {
+  background: #e8efff;
+  color: #4d5e8d
+}
+.tabs button.active {
+  background: #6555cb;
+  color: white
+}
+.hidden {
+  display: none!important
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: #17243ec9;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px
+}
+.modal {
+  background: white;
+  border-radius: 20px;
+  width: min(100%,880px);
+  max-height: 95vh;
+  overflow: auto;
+  padding: 25px
+}
+.modal.full {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 12px
+}
+.modaltop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px
+}
+dl {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 13px
+}
+dt {
+  color: #71809a
+}
+dd {
+  margin: 0;
+  overflow-wrap: anywhere
+}
+.actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 18px
+}
+.message {
+  min-height: 24px;
+  color: #b44646;
+  margin: 12px 0
+}
+table {
+  border-collapse: collapse;
+  width: 100%
+}
+td,th {
+  padding: 12px;
+  border-bottom: 1px solid #e5ebf6;
+  text-align: left
+}
+footer {
+  text-align: center;
+  color: #7e8aa0;
+  padding: 35px
+}
+@media(max-width:680px) {
+  .grid {
+    grid-template-columns: 1fr
+  }
+  .search {
+    flex-direction: column
+  }
+  .hero {
+    padding: 23px
+  }
+  dl {
+    grid-template-columns: 1fr
+  }
+  dt {
+    margin-top: 8px
+  }
+  .item {
+    align-items: flex-start;
+    flex-direction: column
+  }
+}
+.review-row{display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:center;gap:16px;padding:8px 0;border-bottom:1px solid #e5ebf6}.review-row label{margin:0}.review-row select{width:100%}@media(max-width:680px){.review-row{grid-template-columns:1fr}}
+  .brand-logo{width:42px;height:42px;object-fit:contain;vertical-align:middle;margin-right:9px}
+</style>
+ </head>
+ <body>
+  <header>
+   <nav>
+    <a class="brand" href="index.html">
+     <img src="https://i.postimg.cc/qMDpFg75/albatross.png" alt="CRP Logo" class="brand-logo">
+     CRP
+     <b>
+      STAFF CENTER
+     </b>
+    </a>
+    <a class="navlink" href="index.html">
+     ← หน้าตรวจสอบผู้สมัคร
+    </a>
+   </nav>
+  </header>
+  <main>
+   <section class="card" id="loginView" style="max-width:480px;margin:65px auto">
+    <h1>
+     เข้าสู่ระบบเจ้าหน้าที่
+    </h1>
+    <p class="muted">
+     จัดการข้อมูลและผลการคัดเลือกผู้สมัคร
+    </p>
+    <form id="loginForm">
+     <label>
+      ชื่อผู้ใช้
+     </label>
+     <input autocomplete="username" id="username" required=""/>
+     <br/>
+     <br/>
+     <label>
+      รหัสผ่าน
+     </label>
+     <input autocomplete="current-password" id="password" required="" type="password"/>
+     <div class="actions">
+      <button type="submit">
+       เข้าสู่ระบบ
+      </button>
+     </div>
+    </form>
+    <p class="message" id="loginMsg">
+    </p>
+   </section>
+   <section class="hidden" id="appView">
+    <div class="hero">
+     <div class="modaltop">
+      <div>
+       <h1>
+        ระบบบริหารจัดการผู้สมัคร
+       </h1>
+       <p class="muted">
+        Civilian Recruitment & Preparation
+       </p>
+      </div>
+      <button class="ghost" id="logout">
+       ออกจากระบบ
+      </button>
+     </div>
+    </div>
+    <div class="card">
+     <div class="tabs">
+      <button class="active" data-tab="summary">
+       ภาพรวม / สรุปผล
+      </button>
+      <button data-tab="applications">
+       รายชื่อผู้สมัคร
+      </button>
+      <button data-tab="add">
+       เพิ่มข้อมูลผู้สมัคร
+      </button>
+      <button data-tab="review">
+       การตรวจสอบข้อมูล
+      </button>
+      <button data-tab="reviewFailed">
+       ไม่ผ่านการตรวจสอบ
+      </button>
+      <button data-tab="approval">
+       การอนุมัติ
+      </button>
+     </div>
+     <p class="message" id="appMsg">
+     </p>
+    </div>
+    <section class="card" id="tab-summary">
+     <h2>
+      สรุปผลการสมัคร
+     </h2>
+     <div class="stats" id="stats">
+     </div>
+     <h3>
+      จำนวนผู้สมัครตามจังหวัด
+     </h3>
+     <div id="provinces">
+     </div>
+     <h3>
+      ผู้สมัครล่าสุด
+     </h3>
+     <div id="latest">
+     </div>
+    </section>
+    <section class="card hidden" id="tab-applications">
+     <h2>
+      รายชื่อผู้สมัคร
+     </h2>
+     <form class="search" id="findForm">
+      <input id="find" placeholder="ค้นหาชื่อ หรือรหัสผู้สมัคร"/>
+      <button>
+       ค้นหา
+      </button>
+     </form>
+     <p class="muted" id="count">
+     </p>
+     <div class="list" id="appList">
+     </div>
+    </section>
+    <section class="card hidden" id="tab-add">
+     <h2 id="formTitle">
+      เพิ่มข้อมูลผู้สมัคร
+     </h2>
+     <form id="applicationForm">
+      <div class="grid">
+       <div>
+        <label>
+         รหัสผู้สมัคร *
+        </label>
+        <input maxlength="50" name="applicationId" pattern="[A-Za-z0-9_-]{2,50}" placeholder="เช่น CRP-0001" required=""/>
+       </div>
+       <div>
+        <label>
+         คำนำหน้า *
+        </label>
+        <select name="prefix" required="">
+         <option value="">
+          เลือกคำนำหน้า
+         </option>
+         <option>
+          นาย
+         </option>
+         <option>
+          นาง
+         </option>
+         <option>
+          นางสาว
+         </option>
+         <option>
+          อื่น ๆ
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         ชื่อ *
+        </label>
+        <input maxlength="100" name="firstName" required=""/>
+       </div>
+       <div>
+        <label>
+         นามสกุล *
+        </label>
+        <input maxlength="100" name="lastName" required=""/>
+       </div>
+       <div>
+        <label>
+         วันเดือนปีเกิด *
+        </label>
+        <input id="birthDate" name="birthDate" required="" type="date"/>
+       </div>
+       <div>
+        <label>
+         อายุ (คำนวณอัตโนมัติ)
+        </label>
+        <input id="ageDisplay" placeholder="เลือกวันเกิดก่อน" readonly=""/>
+       </div>
+       <div>
+        <label>
+         สัญชาติ *
+        </label>
+        <select name="nationality" required="">
+         <option value="">
+          เลือกสัญชาติ
+         </option>
+         <option>
+          ไทย
+         </option>
+         <option>
+          อเมริกา
+         </option>
+         <option>
+          อื่นๆ
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         เชื้อชาติ *
+        </label>
+        <select name="ethnicity" required="">
+         <option value="">
+          เลือกเชื้อชาติ
+         </option>
+         <option>
+          ไทย
+         </option>
+         <option>
+          อเมริกา
+         </option>
+         <option>
+          อื่นๆ
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         ภูมิภาค *
+        </label>
+        <select id="regionSelect" name="region" required="">
+         <option value="">
+          เลือกภูมิภาค
+         </option>
+         <option>
+          ภาคเหนือ
+         </option>
+         <option>
+          ภาคตะวันออกเฉียงเหนือ
+         </option>
+         <option>
+          ภาคกลาง
+         </option>
+         <option>
+          ภาคตะวันออก
+         </option>
+         <option>
+          ภาคตะวันตก
+         </option>
+         <option>
+          ภาคใต้
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         จังหวัด *
+        </label>
+        <input id="provinceInput" list="provinceOptions" name="province" placeholder="เลือกหรือพิมพ์ชื่อจังหวัด" required=""/>
+        <datalist id="provinceOptions">
+        </datalist>
+       </div>
+       <div>
+        <label>
+         ระดับการศึกษา *
+        </label>
+        <select name="education" required="">
+         <option value="">
+          เลือกระดับการศึกษา
+         </option>
+         <option>
+          ประถมศึกษา
+         </option>
+         <option>
+          มัธยมศึกษาตอนต้น
+         </option>
+         <option>
+          มัธยมศึกษาตอนปลาย/ปวช.
+         </option>
+         <option>
+          อนุปริญญา/ปวส.
+         </option>
+         <option>
+          ปริญญาตรี
+         </option>
+         <option>
+          สูงกว่าปริญญาตรี
+         </option>
+         <option>
+          อื่น ๆ
+         </option>
+        </select>
+       </div>
+       <div>
+        <label>
+         เบอร์โทรศัพท์ (10 หลัก) *
+        </label>
+        <input inputmode="numeric" maxlength="10" name="phone" pattern="[0-9]{10}" placeholder="0812345678" required="" type="tel"/>
+       </div>
+      </div>
+      <div class="actions">
+       <button class="orange" id="saveBtn" type="submit">
+        บันทึกผู้สมัคร
+       </button>
+       <button class="ghost" id="resetBtn" type="button">
+        ล้างแบบฟอร์ม
+       </button>
+      </div>
+     </form>
+    </section>
+    <section class="card hidden" id="tab-review">
+     <h2>
+      การตรวจสอบข้อมูล
+     </h2>
+     <p class="muted">
+      รายการที่ยังไม่ผ่านขั้นตอนตรวจสอบข้อมูล
+     </p>
+     <div class="list" id="reviewList">
+     </div>
+    </section>
+    <section class="card hidden" id="tab-reviewFailed">
+     <h2>ไม่ผ่านการตรวจสอบ</h2>
+     <p class="muted">รายการที่มีผลตรวจสอบอย่างน้อยหนึ่งหัวข้อไม่ผ่าน สามารถเปิดดูและแก้ไขผลตรวจสอบได้</p>
+     <div class="list" id="reviewFailedList"></div>
+    </section>
+    <section class="card hidden" id="tab-approval">
+     <h2>
+      พิจารณาและอนุมัติผล
+     </h2>
+     <form class="search" id="approvalFindForm">
+      <input id="approvalFind" placeholder="ค้นหาชื่อ หรือรหัสผู้สมัคร">
+       <button>
+        ค้นหา
+       </button>
+      </input>
+     </form>
+     <div class="list" id="approvalList" style="margin-top:15px">
+     </div>
+    </section>
+   </section>
+  </main>
+  <div class="overlay hidden" id="overlay">
+   <div class="modal full">
+    <div class="modaltop">
+     <h2 id="modalTitle">
+      รายละเอียดผู้สมัคร
+     </h2>
+     <button class="ghost" id="closeModal">
+      ปิด ✕
+     </button>
+    </div>
+    <div id="modalBody">
+    </div>
+   </div>
+  </div>
+  <footer>
+   CRP — Staff Management Center
+  </footer>
+  <script>
+/* CRP GitHub Pages -> Apps Script iframe connector. Set deployed /exec URL below. */
+window.CRP_GAS_URL = 'https://script.google.com/macros/s/AKfycbwVQTb4kDCrGbg9OY7a9sio7IRl08-2Ag8EmOkkw_jBv3V6S3-WytWJXH2N5IR_pHGl/exec';
+(function(){
+'use strict';
+const pending=new Map();
+const channel=Array.from(crypto.getRandomValues(new Uint8Array(24)),v=>v.toString(16).padStart(2,'0')).join('');
+let frame=null,ready=false,seq=0;
+let bridgeOrigin='';
+let readyResolve,readyReject;
+const readyPromise=new Promise((res,rej)=>{readyResolve=res;readyReject=rej;});
+function start(){
+ const url=window.CRP_GAS_URL;
+ if(!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/.test(url)){
+   readyReject(new Error('กรุณาตั้งค่า CRP_GAS_URL ใน connector.js เป็นลิงก์ Google Apps Script /exec'));return;
+ }
+ frame=document.createElement('iframe');
+ frame.style.cssText='position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none';
+ frame.setAttribute('title','CRP Connector');
+ const src=new URL(url);src.searchParams.set('page','bridge');src.searchParams.set('origin',location.origin);src.searchParams.set('channel',channel);
+ frame.src=src.href;
+ document.body.appendChild(frame);
+ const timer=setInterval(()=>{if(ready){clearInterval(timer);return;}if(frame.contentWindow)frame.contentWindow.postMessage({crpBridge:true,channel,type:'hello'},'*');},750);
+ setTimeout(()=>{clearInterval(timer);if(!ready)readyReject(new Error('หมดเวลารอ Google Apps Script: ตรวจสอบ /exec, Deploy, CRP_GITHUB_ORIGIN และ Bridge.html'));},20000);
+}
+window.addEventListener('message',e=>{
+ if(!frame||e.source!==frame.contentWindow||!e.data||e.data.crpBridge!==true||e.data.channel!==channel)return;
+ // HtmlService is hosted on Google's sandboxed googleusercontent.com iframe.
+ if(!/^https:\/\/([a-z0-9-]+\.)?googleusercontent\.com$/.test(e.origin) && e.origin!=='null')return;
+ const m=e.data;
+ if(m.type==='ready'){ready=true;bridgeOrigin=e.origin;readyResolve();return;}
+ if(m.type!=='response')return;
+ const entry=pending.get(m.id);if(!entry)return;
+ pending.delete(m.id);clearTimeout(entry.timer);
+ m.ok?entry.resolve(m.result):entry.reject(new Error(m.error||'คำสั่งล้มเหลว'));
+});
+window.callServer=async function(action,payload={}){
+ await readyPromise;
+ const id=channel+'_'+(++seq);
+ return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>{pending.delete(id);reject(new Error('หมดเวลารอคำตอบจาก Apps Script'));},60000);
+  pending.set(id,{resolve,reject,timer});
+  frame.contentWindow.postMessage({crpBridge:true,channel,type:'request',id,action,payload},bridgeOrigin==='null'?'*':bridgeOrigin);
+ });
+};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+
+</script>
+   <script>
+   const CRP_API = { call: callServer };
+function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function dateText(v) { if (!v)
+    return '-'; const d = new Date(v); return Number.isNaN(d.getTime()) ? esc(v) : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  </script>
+  <script>
+   const $ = id => document.getElementById(id);
+const STATUS = ['รอตรวจสอบ', 'ไม่ผ่านการตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'];
+const CHECKS = [
+'มีอายุตามกำหนด',
+  'ไม่เป็นผู้ดำรงตำแหน่งทางการเมือง', 'ไม่เป็นบุคคลล้มละลาย',
+  'ไม่เป็นบุคคลต้องโทษหรือต้องคำพิพากษา', 'รูปถ่าย',
+  'วุฒิการศึกษา', 'ผลการเรียน', 'ทะเบียนบ้านและบัตรประชาชน',
+  'สำเนาข้อมูลครอบครัว', 'หนังสืออนุมัติ'
+];
+
+const REGION_PROVINCES = {
+  "ภาคเหนือ": [
+    "เชียงใหม่",
+    "เชียงราย",
+    "ลำพูน",
+    "ลำปาง",
+    "แพร่",
+    "น่าน",
+    "พะเยา",
+    "แม่ฮ่องสอน",
+    "อุตรดิตถ์"
+  ],
+  "ภาคตะวันออกเฉียงเหนือ": [
+    "นครราชสีมา",
+    "บุรีรัมย์",
+    "สุรินทร์",
+    "ศรีสะเกษ",
+    "อุบลราชธานี",
+    "ยโสธร",
+    "ชัยภูมิ",
+    "อำนาจเจริญ",
+    "หนองบัวลำภู",
+    "ขอนแก่น",
+    "อุดรธานี",
+    "เลย",
+    "หนองคาย",
+    "มหาสารคาม",
+    "ร้อยเอ็ด",
+    "กาฬสินธุ์",
+    "สกลนคร",
+    "นครพนม",
+    "มุกดาหาร",
+    "บึงกาฬ"
+  ],
+  "ภาคกลาง": [
+    "กรุงเทพมหานคร",
+    "นนทบุรี",
+    "ปทุมธานี",
+    "พระนครศรีอยุธยา",
+    "อ่างทอง",
+    "ลพบุรี",
+    "สิงห์บุรี",
+    "ชัยนาท",
+    "สระบุรี",
+    "นครนายก",
+    "สุพรรณบุรี",
+    "นครปฐม",
+    "สมุทรปราการ",
+    "สมุทรสาคร",
+    "สมุทรสงคราม"
+  ],
+  "ภาคตะวันออก": [
+    "ชลบุรี",
+    "ระยอง",
+    "จันทบุรี",
+    "ตราด",
+    "ฉะเชิงเทรา",
+    "ปราจีนบุรี",
+    "สระแก้ว"
+  ],
+  "ภาคตะวันตก": [
+    "ตาก",
+    "กาญจนบุรี",
+    "ราชบุรี",
+    "เพชรบุรี",
+    "ประจวบคีรีขันธ์"
+  ],
+  "ภาคใต้": [
+    "ชุมพร",
+    "ระนอง",
+    "สุราษฎร์ธานี",
+    "นครศรีธรรมราช",
+    "กระบี่",
+    "พังงา",
+    "ภูเก็ต",
+    "ตรัง",
+    "พัทลุง",
+    "สตูล",
+    "สงขลา",
+    "ปัตตานี",
+    "ยะลา",
+    "นราธิวาส"
+  ]
+};
+function updateProvinceOptions(clear = true) {
+  const region = $('regionSelect').value;
+  const list = $('provinceOptions');
+  list.replaceChildren(...(REGION_PROVINCES[region] || []).map(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    return option;
+  }));
+  if (clear) $('provinceInput').value = '';
+}
+$('regionSelect').addEventListener('change', () => updateProvinceOptions());
+
+let token = '';
+let editing = '';
+let rows = [];
+const msg = text => { $('appMsg').textContent = text || ''; };
+const session = () => ({ token });
+
+async function api(action, payload = {}) {
+  return CRP_API.call(action, { ...payload, ...session() });
+}
+
+function ageFromDate(value) {
+  if (!value) return '';
+  const parts = value.split('-').map(Number);
+  if (parts.length !== 3) return '';
+  const now = new Date();
+  let age = now.getFullYear() - parts[0];
+  if (now.getMonth() + 1 < parts[1] ||
+      (now.getMonth() + 1 === parts[1] && now.getDate() < parts[2])) age--;
+  return age >= 0 ? String(age) + ' ปี' : '';
+}
+
+function updateAge() {
+  $('ageDisplay').value = ageFromDate($('birthDate').value);
+}
+$('birthDate').addEventListener('change', updateAge);
+$('birthDate').max = new Date().toISOString().slice(0, 10);
+
+function stageOf(record) {
+  if (['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(record.Status)) return record.Status;
+  if (record.ReviewStatus === 'ไม่ผ่านการตรวจสอบ') return 'ไม่ผ่านการตรวจสอบ';
+  return record.ReviewStatus === 'ตรวจสอบแล้ว' ? 'รอการอนุมัติ' : 'รอตรวจสอบข้อมูล';
+}
+
+async function tab(name) {
+  document.querySelectorAll('[data-tab]').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  document.querySelectorAll('[id^="tab-"]').forEach(el => {
+    el.classList.toggle('hidden', el.id !== 'tab-' + name);
+  });
+  msg('');
+  if (name === 'summary') await loadSummary();
+  if (name === 'applications') await loadList();
+  if (name === 'review') await loadReview();
+  if (name === 'reviewFailed') await loadReviewFailed();
+  if (name === 'approval') await loadApproval();
+}
+document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => tab(b.dataset.tab));
+
+$('loginForm').onsubmit = async e => {
+  e.preventDefault();
+  $('loginMsg').textContent = 'กำลังเข้าสู่ระบบ...';
+  try {
+    const r = await CRP_API.call('login', {
+      username: $('username').value.trim(),
+      password: $('password').value
+    });
+    token = r.token;
+    $('password').value = '';
+    $('loginView').classList.add('hidden');
+    $('appView').classList.remove('hidden');
+    $('loginMsg').textContent = '';
+    tab('summary');
+  } catch (err) {
+    $('loginMsg').textContent = err.message;
+  }
+};
+
+$('logout').onclick = async () => {
+  try { await api('logout'); } catch (_) {}
+  token = '';
+  editing = '';
+  $('appView').classList.add('hidden');
+  $('loginView').classList.remove('hidden');
+  $('loginMsg').textContent = 'ออกจากระบบแล้ว';
+};
+
+async function loadSummary() {
+  msg('กำลังโหลดสรุปผล...');
+  try {
+    const r = await api('getSummary');
+    $('stats').innerHTML = [['ผู้สมัครทั้งหมด', r.total], ...STATUS.map(s => [s, (r.byStatus || {})[s] || 0])]
+      .map(([k, v]) => `<div class="stat"><span>${esc(k)}</span><strong>${Number(v) || 0}</strong></div>`).join('');
+    $('provinces').innerHTML = Object.entries(r.byProvince || {})
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, v]) => `<div class="item"><span>${esc(k)}</span><strong>${Number(v)}</strong></div>`).join('')
+      || '<p class="muted">ยังไม่มีข้อมูล</p>';
+    $('latest').innerHTML = (r.latest || [])
+      .map(x => `<div class="item"><span>${esc(x.fullName)}<br><small>${esc(x.applicationId)}</small></span><span class="pill">${esc(x.status)}</span></div>`)
+      .join('') || '<p class="muted">ยังไม่มีข้อมูล</p>';
+    msg('');
+  } catch (err) { msg(err.message); }
+}
+
+function itemButton(record, mode) {
+  const button = document.createElement('button');
+  const name = [record.Prefix, record.FirstName, record.LastName].filter(Boolean).join(' ');
+  button.className = 'item';
+  button.innerHTML = `<span><strong>${esc(name)}</strong><br><small class="muted">${esc(record.ApplicationID)}</small></span><span class="pill">${esc(stageOf(record))}</span>`;
+  button.onclick = () => openRecord(record.ApplicationID, mode);
+  return button;
+}
+
+/** Queue rows show only the identifiers needed to manage an approval. */
+function managementItem(record, mode) {
+  const line = document.createElement('div');
+  line.className = 'item';
+
+  const name = [record.Prefix, record.FirstName, record.LastName]
+    .filter(Boolean)
+    .join(' ');
+  const actionLabel = mode === 'review'
+    ? 'แก้ไขผลตรวจสอบ'
+    : 'จัดการอนุมัติ';
+
+  line.innerHTML = `
+    <span>
+      <strong>${esc(name)}</strong>
+      <small class="muted"> (${esc(record.ApplicationID)})</small>
+    </span>
+    <button class="orange" type="button">${actionLabel}</button>
+  `;
+
+  line.querySelector('button').addEventListener('click', () => {
+    openRecord(record.ApplicationID, mode);
+  });
+
+  return line;
+}
+
+async function fetchAllApplications(filters = {}) {
+  const items = [];
+  const limit = 200;
+  let offset = 0;
+  let total = 0;
+
+  do {
+    const response = await api('getApplications', { ...filters, offset, limit });
+    const batch = response.items || [];
+    total = Number(response.total) || 0;
+    items.push(...batch);
+    offset += batch.length;
+    if (!batch.length) break;
+  } while (offset < total);
+
+  return { total, items };
+}
+
+async function loadList() {
+  msg('กำลังโหลดรายชื่อ...');
+  try {
+    const result = await fetchAllApplications({ query: $('find').value.trim() });
+    rows = result.items;
+    $('count').textContent = `พบ ${result.total} รายการ`;
+    $('appList').replaceChildren(...rows.map(record => itemButton(record, 'detail')));
+    if (!rows.length) $('appList').innerHTML = '<p class="muted">ไม่พบรายชื่อผู้สมัคร</p>';
+    msg('');
+  } catch (error) {
+    msg('โหลดรายชื่อไม่สำเร็จ: ' + error.message);
+  }
+}
+
+async function loadReview() {
+  msg('กำลังโหลดรายการตรวจสอบ...');
+  try {
+    const r = await fetchAllApplications({ stage: 'review' });
+    $('reviewList').replaceChildren(...(r.items || []).map(x => {
+      const line = document.createElement('div');
+      line.className = 'item';
+      const name = [x.Prefix, x.FirstName, x.LastName].filter(Boolean).join(' ');
+      line.innerHTML = `<span><strong>${esc(name)}</strong><br><small class="muted">${esc(x.ApplicationID)}</small></span><button class="orange" type="button">ตรวจสอบข้อมูล</button>`;
+      line.querySelector('button').onclick = () => openRecord(x.ApplicationID, 'review');
+      return line;
+    }));
+    msg('');
+  } catch (err) { msg(err.message); }
+}
+
+async function loadReviewFailed() {
+  msg('กำลังโหลดรายการไม่ผ่านการตรวจสอบ...');
+  try {
+    const result = await fetchAllApplications({ stage: 'reviewFailed' });
+    const items = result.items || [];
+    $('reviewFailedList').replaceChildren(...items.map(record => managementItem(record, 'review')));
+    if (!items.length) $('reviewFailedList').innerHTML = '<p class="muted">ไม่มีรายการไม่ผ่านการตรวจสอบ</p>';
+    msg('');
+  } catch (error) {
+    msg(error.message);
+  }
+}
+
+async function loadApproval() {
+  msg('กำลังโหลดรายการอนุมัติ...');
+  try {
+    const r = await fetchAllApplications({ stage: 'approval', query: $('approvalFind').value.trim() });
+    $('approvalList').replaceChildren(...(r.items || []).map(x => managementItem(x, 'approval')));
+    msg('');
+  } catch (err) { msg(err.message); }
+}
+
+$('findForm').onsubmit = e => { e.preventDefault(); loadList(); };
+$('approvalFindForm').onsubmit = e => { e.preventDefault(); loadApproval(); };
+
+function parseReview(record) {
+  try { return JSON.parse(record.ReviewData || '{}') || {}; }
+  catch (_) { return {}; }
+}
+
+function detailFields(record) {
+  const entries = [
+    ['รหัสผู้สมัคร', record.ApplicationID],
+    ['คำนำหน้า', record.Prefix], ['ชื่อ', record.FirstName], ['นามสกุล', record.LastName],
+    ['วันเดือนปีเกิด', record.BirthDate], ['อายุ', ageFromDate(record.BirthDate)],
+    ['สัญชาติ', record.Nationality], ['เชื้อชาติ', record.Ethnicity],
+    ['ภูมิภาค', record.Region], ['จังหวัด', record.Province],
+    ['ระดับการศึกษา', record.Education], ['เบอร์โทรศัพท์', record.Phone],
+    ['ขั้นตอนปัจจุบัน', stageOf(record)], ['ผลการสมัคร', record.Status],
+    ['เหตุผลการพิจารณา', record.DecisionReason || record.AdminNote]
+  ];
+  const checks = parseReview(record);
+  CHECKS.forEach(name => entries.push([name, checks[name] || 'ยังไม่ตรวจสอบ']));
+  return entries.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v || '-')}</dd>`).join('');
+}
+
+/**
+ * Detailed applicant history is shown only in the applicant-list tab.
+ * Verification and approval tabs open a task-specific management panel.
+ */
+async function openRecord(id, mode) {
+  $('overlay').classList.remove('hidden');
+  $('modalBody').textContent = 'กำลังโหลด...';
+  $('modalTitle').textContent = mode === 'review'
+    ? 'จัดการผลการตรวจสอบ'
+    : mode === 'approval'
+      ? 'จัดการอนุมัติ'
+      : 'รายละเอียดผู้สมัคร';
+
+  try {
+    const record = await api('getApplication', { applicationId: id });
+    const name = [record.Prefix, record.FirstName, record.LastName]
+      .filter(Boolean)
+      .join(' ');
+
+    if (mode === 'detail') {
+      $('modalTitle').textContent = 'รายละเอียดผู้สมัคร';
+      $('modalBody').innerHTML = `
+        <dl>${detailFields(record)}</dl>
+        <div class="actions">
+          <button id="editRecord" class="ghost" type="button">แก้ไขข้อมูลผู้สมัคร</button>
+        </div>
+      `;
+      $('editRecord').onclick = () => editRecord(record);
+      return;
+    }
+
+    // Management-only views: no date of birth, personal history, or profile fields.
+    $('modalBody').innerHTML = `
+      <p class="muted">รหัสผู้สมัคร: <strong>${esc(record.ApplicationID)}</strong></p>
+      <h3>${esc(name)}</h3>
+    `;
+
+    if (mode === 'review') {
+      renderReview(record);
+    } else if (mode === 'approval') {
+      if (record.ReviewStatus !== 'ตรวจสอบแล้ว') {
+        $('modalBody').innerHTML += '<p class="message">รายการนี้ยังไม่ผ่านการตรวจสอบข้อมูลครบทุกหัวข้อ</p>';
+        return;
+      }
+      renderApproval(record);
+    }
+  } catch (error) {
+    $('modalBody').textContent = error.message;
+  }
+}
+
+function renderReview(record) {
+  const checks = parseReview(record);
+  const section = document.createElement('section');
+  section.className = 'card';
+  section.innerHTML = `<h3>รายการตรวจสอบข้อมูล</h3><p class="muted">เลือกผลตรวจสอบให้ครบทุกหัวข้อ</p>`;
+  CHECKS.forEach((name, index) => {
+    const line = document.createElement('div');
+    line.style.marginBottom = '15px';
+    const options = name === 'หนังสืออนุมัติ' ? ['ผ่าน', 'ไม่ผ่าน', 'ไม่ระบุ'] : ['ผ่าน', 'ไม่ผ่าน'];
+    line.innerHTML = `<div class="review-row"><label>${index + 1}. ${esc(name)}</label><select data-check="${index}"><option value="">เลือกผลตรวจสอบ</option>${options.map(v => `<option value="${esc(v)}" ${checks[name] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`;
+    section.append(line);
+  });
+  const button = document.createElement('button');
+  button.className = 'orange';
+  button.textContent = 'บันทึกผลการตรวจสอบ';
+  button.onclick = async () => {
+    const results = {};
+    CHECKS.forEach((name, i) => {
+      results[name] = section.querySelector(`[data-check="${i}"]`).value;
+    });
+    if (Object.values(results).some(v => !v)) {
+      alert('กรุณาเลือกผลตรวจสอบให้ครบทุกหัวข้อ');
+      return;
+    }
+    button.disabled = true;
+    try {
+      const result = await api('saveReview', { applicationId: record.ApplicationID, checks: results });
+      closeModal();
+      if (result.reviewStatus === 'ตรวจสอบแล้ว') {
+        await tab('approval');
+        msg('ผ่านการตรวจสอบครบทุกหัวข้อ ส่งเข้าหน้าการอนุมัติแล้ว');
+      } else {
+        await tab('reviewFailed');
+        msg('มีหัวข้อไม่ผ่าน ส่งเข้าหน้าไม่ผ่านการตรวจสอบแล้ว');
+      }
+    } catch (err) { alert(err.message); }
+    finally { button.disabled = false; }
+  };
+  section.append(button);
+  $('modalBody').append(section);
+}
+
+function renderApproval(record) {
+  const section = document.createElement('section');
+  section.className = 'card';
+  section.innerHTML = `<h3>อนุมัติผลการสมัคร</h3>
+    <label>ผลการสมัคร</label>
+    <select id="decisionSelect"><option value="">เลือกผลการสมัคร</option>
+      <option value="ผ่านการคัดเลือก">ผ่านการสมัคร</option>
+      <option value="ไม่ผ่านการคัดเลือก">ไม่ผ่านการสมัคร</option>
+    </select>
+    <p><label>เหตุผลการพิจารณา *</label><textarea id="decisionReason" rows="4" maxlength="2000" placeholder="ระบุเหตุผล"></textarea></p>
+    <button id="decisionSave" class="orange">บันทึกผลการอนุมัติ</button>`;
+  $('modalBody').append(section);
+  $('decisionSelect').value = ['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(record.Status) ? record.Status : '';
+  $('decisionReason').value = record.DecisionReason || record.AdminNote || '';
+  $('decisionSave').onclick = async () => {
+    const status = $('decisionSelect').value;
+    const reason = $('decisionReason').value.trim();
+    if (!status || !reason) return alert('กรุณาเลือกผลและระบุเหตุผล');
+    const button = $('decisionSave');
+    button.disabled = true;
+    try {
+      await api('setApplicationStatus', { applicationId: record.ApplicationID, status, reason });
+      closeModal();
+      tab('approval');
+      msg('บันทึกผลการอนุมัติสำเร็จ');
+    } catch (err) { alert(err.message); }
+    finally { button.disabled = false; }
+  };
+}
+
+function editRecord(record) {
+  editing = record.ApplicationID;
+  const form = $('applicationForm');
+  const data = {
+    applicationId: record.ApplicationID,
+    prefix: record.Prefix, firstName: record.FirstName, lastName: record.LastName,
+    birthDate: record.BirthDate, phone: record.Phone, nationality: record.Nationality,
+    ethnicity: record.Ethnicity, region: record.Region, province: record.Province, education: record.Education
+  };
+  for (const [key, value] of Object.entries(data)) {
+    const input = form.elements.namedItem(key);
+    if (input) input.value = value || '';
+  }
+  updateProvinceOptions(false);
+  updateAge();
+  $('formTitle').textContent = 'แก้ไขข้อมูล ' + editing;
+  $('saveBtn').textContent = 'บันทึกการแก้ไข';
+  closeModal();
+  tab('add');
+}
+
+function resetForm() {
+  $('applicationForm').reset();
+  editing = '';
+  updateProvinceOptions(false);
+  updateAge();
+  $('formTitle').textContent = 'เพิ่มข้อมูลผู้สมัคร';
+  $('saveBtn').textContent = 'บันทึกผู้สมัคร';
+}
+$('resetBtn').onclick = resetForm;
+
+$('applicationForm').onsubmit = async e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  const button = $('saveBtn');
+  button.disabled = true;
+  msg('กำลังบันทึกข้อมูล...');
+  try {
+    const action = editing ? 'updateApplication' : 'addApplication';
+    const response = await api(action, { applicationId: editing, application: data });
+    const id = response.applicationId || editing;
+    resetForm();
+    await tab('applications');
+    msg('บันทึกสำเร็จ รหัสผู้สมัคร: ' + id);
+  } catch (err) { msg(err.message); }
+  finally { button.disabled = false; }
+};
+
+function closeModal() { $('overlay').classList.add('hidden'); }
+$('closeModal').onclick = closeModal;
+$('overlay').onclick = e => { if (e.target === $('overlay')) closeModal(); };
+  </script>
+ </body>
+</html>
