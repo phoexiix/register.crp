@@ -971,14 +971,12 @@ async function loadReviewFailed() {
 async function loadApproval() {
   msg('กำลังโหลดรายการอนุมัติ...');
   try {
-    const r = await fetchAllApplications({ stage: 'approval', query: $('approvalFind').value.trim() });
-    $('approvalList').replaceChildren(...(r.items || []).map(x => managementItem(x, 'approval')));
+    const r = await fetchAllApplications({ stage: 'approval', query: $('approvalFind').value.trim() });$('approvalList').replaceChildren(...(r.items || []).map(x => managementItem(x, 'approval')));
     msg('');
   } catch (err) { msg(err.message); }
 }
 
-$('findForm').onsubmit = e => { e.preventDefault(); loadList(); };
-$('approvalFindForm').onsubmit = e => { e.preventDefault(); loadApproval(); };
+$('findForm').onsubmit = e => { e.preventDefault(); loadList(); };$('approvalFindForm').onsubmit = e => { e.preventDefault(); loadApproval(); };
 
 function parseReview(record) {
   try { return JSON.parse(record.ReviewData || '{}') || {}; }
@@ -1006,8 +1004,7 @@ function detailFields(record) {
  * Verification and approval tabs open a task-specific management panel.
  */
 async function openRecord(id, mode) {
-  $('overlay').classList.remove('hidden');
-  $('modalBody').textContent = 'กำลังโหลด...';
+  $('overlay').classList.remove('hidden');$('modalBody').textContent = 'กำลังโหลด...';
   $('modalTitle').textContent = mode === 'review'
     ? 'จัดการผลการตรวจสอบ'
     : mode === 'approval'
@@ -1105,10 +1102,8 @@ function renderApproval(record) {
     </select>
     <p><label>เหตุผลการพิจารณา *</label><textarea id="decisionReason" rows="4" maxlength="2000" placeholder="ระบุเหตุผล"></textarea></p>
     <button id="decisionSave" class="orange">บันทึกผลการอนุมัติ</button>`;
-  $('modalBody').append(section);
-  $('decisionSelect').value = ['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(record.Status) ? record.Status : '';
-  $('decisionReason').value = record.DecisionReason || record.AdminNote || '';
-  $('decisionSave').onclick = async () => {
+  $('modalBody').append(section);$('decisionSelect').value = ['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(record.Status) ? record.Status : '';
+  $('decisionReason').value = record.DecisionReason \vert{}\vert{} record.AdminNote \vert{}\vert{} '';$('decisionSave').onclick = async () => {
     const status = $('decisionSelect').value;
     const reason = $('decisionReason').value.trim();
     if (!status || !reason) return alert('กรุณาเลือกผลและระบุเหตุผล');
@@ -1172,9 +1167,8 @@ $('applicationForm').onsubmit = async e => {
   finally { button.disabled = false; }
 };
 
-function closeModal() { $('overlay').classList.add('hidden'); }
-$('closeModal').onclick = closeModal;
-$('overlay').onclick = e => { if (e.target === $('overlay')) closeModal(); };
+function closeModal() { $('overlay').classList.add('hidden'); }$('closeModal').onclick = closeModal;
+$('overlay').onclick = e => { if (e.target ===$('overlay')) closeModal(); };
   </script>
  </body>
 </html>
