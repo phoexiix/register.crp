@@ -160,7 +160,9 @@ function getApplications_(p) {
     if (stage === 'approval') return match && r.ReviewStatus === 'ตรวจสอบแล้ว' && !['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(r.Status);
     return match;
   });
-  return { total: rows.length, items: rows.slice(0, 500) };
+  const offset = Math.max(0, Math.floor(Number(p.offset) || 0));
+  const limit = Math.min(500, Math.max(1, Math.floor(Number(p.limit) || 200)));
+  return { total: rows.length, items: rows.slice(offset, offset + limit), offset: offset, limit: limit };
 }
 
 function getApplication_(p) {
@@ -176,7 +178,8 @@ function addApplication_(p) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    const id = 'CRP-' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd') + '-' + Utilities.getUuid().slice(0, 8).toUpperCase();
+    const id = validateApplicationId_((p.application || {}).applicationId);
+    if (findRow_(id)) throw new Error('รหัสผู้สมัครนี้มีอยู่ในระบบแล้ว กรุณาใช้รหัสอื่น');
     const now = new Date().toISOString();
     const record = Object.assign({ ApplicationID: id, CreatedAt: now }, input, {
       Status: 'รอตรวจสอบ', AdminNote: '', UpdatedAt: now,
@@ -194,15 +197,17 @@ function updateApplication_(p) {
   const admin = requireAdmin_(p);
   const id = clean_(p.applicationId, 50);
   const input = validateInput_(p.application || {});
+  const newId = validateApplicationId_((p.application || {}).applicationId || id);
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
     const match = findRow_(id);
+    if (newId !== id && findRow_(newId)) throw new Error('รหัสผู้สมัครใหม่ซ้ำกับข้อมูลที่มีอยู่');
     if (!match) throw new Error('ไม่พบข้อมูลผู้สมัคร');
-    const record = Object.assign({}, match.record, input, { UpdatedAt: new Date().toISOString() });
+    const record = Object.assign({}, match.record, input, { ApplicationID: newId, UpdatedAt: new Date().toISOString() });
     writeRecord_(match, record);
     log_('update', id, admin, '');
-    return { success: true, applicationId: id, record: record };
+    return { success: true, applicationId: newId, record: record };
   } finally {
     lock.releaseLock();
   }
@@ -293,6 +298,15 @@ function getSummary_(p) {
 }
 
 // ---------- Validation ----------
+function validateApplicationId_(value) {
+  const id = clean_(value, 50);
+  if (!id) throw new Error('กรุณากรอกรหัสผู้สมัคร');
+  if (!/^[a-zA-Z0-9_-]{2,50}$/.test(id)) {
+    throw new Error('รหัสผู้สมัครใช้ได้เฉพาะตัวอักษรอังกฤษ ตัวเลข ขีดกลาง และขีดล่าง (2-50 ตัว)');
+  }
+  return id;
+}
+
 function validateInput_(obj) {
   const r = {
     Prefix: clean_(obj.prefix, 30),

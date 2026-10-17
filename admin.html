@@ -337,10 +337,10 @@ footer {
       <button data-tab="applications">
        รายชื่อผู้สมัคร
       </button>
-      <button data-tab="review">ตรวจสอบข้อมูล</button>
        <button data-tab="add">
        เพิ่มข้อมูลผู้สมัคร
       </button>
+      <button data-tab="review">การตรวจสอบข้อมูล</button>
       <button data-tab="approval">
        การอนุมัติ
       </button>
@@ -386,6 +386,10 @@ footer {
      </h2>
            <form id="applicationForm">
         <div class="grid">
+          <div>
+            <label>รหัสผู้สมัคร *</label>
+            <input name="applicationId" maxlength="50" pattern="[A-Za-z0-9_-]{2,50}" required placeholder="เช่น CRP-0001" autocomplete="off">
+          </div>
           <div><label>คำนำหน้าชื่อ *</label><select name="prefix" required>
             <option value="">เลือกคำนำหน้า</option><option>นาย</option><option>นาง</option>
             <option>นางสาว</option><option>อื่น ๆ</option>
@@ -417,7 +421,13 @@ footer {
           <button class="orange" id="saveBtn" type="submit">บันทึกผู้สมัคร</button>
           <button class="ghost" id="resetBtn" type="button">ล้างแบบฟอร์ม</button>
         </div>
-      </form>/section>
+      </form>
+    </section>
+    <section class="card hidden" id="tab-review">
+      <h2>การตรวจสอบข้อมูล</h2>
+      <p class="muted">รายการที่ยังไม่ผ่านขั้นตอนตรวจสอบข้อมูล</p>
+      <div class="list" id="reviewList"></div>
+    </section>
     <section class="card hidden" id="tab-approval">
      <h2>
       พิจารณาและอนุมัติผล
@@ -504,7 +514,7 @@ function stageOf(record) {
   return record.ReviewStatus === 'ตรวจสอบแล้ว' ? 'รอการอนุมัติ' : 'รอตรวจสอบข้อมูล';
 }
 
-function tab(name) {
+async function tab(name) {
   document.querySelectorAll('[data-tab]').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === name);
   });
@@ -512,10 +522,10 @@ function tab(name) {
     el.classList.toggle('hidden', el.id !== 'tab-' + name);
   });
   msg('');
-  if (name === 'summary') loadSummary();
-  if (name === 'applications') loadList();
-  if (name === 'review') loadReview();
-  if (name === 'approval') loadApproval();
+  if (name === 'summary') await loadSummary();
+  if (name === 'applications') await loadList();
+  if (name === 'review') await loadReview();
+  if (name === 'approval') await loadApproval();
 }
 document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => tab(b.dataset.tab));
 
@@ -573,21 +583,42 @@ function itemButton(record, mode) {
   return button;
 }
 
+async function fetchAllApplications(filters = {}) {
+  const items = [];
+  const limit = 200;
+  let offset = 0;
+  let total = 0;
+
+  do {
+    const response = await api('getApplications', { ...filters, offset, limit });
+    const batch = response.items || [];
+    total = Number(response.total) || 0;
+    items.push(...batch);
+    offset += batch.length;
+    if (!batch.length) break;
+  } while (offset < total);
+
+  return { total, items };
+}
+
 async function loadList() {
   msg('กำลังโหลดรายชื่อ...');
   try {
-    const r = await api('getApplications', { query: $('find').value.trim() });
-    rows = r.items || [];
-    $('count').textContent = `พบ ${r.total} รายการ (แสดงสูงสุด 500 รายการ)`;
-    $('appList').replaceChildren(...rows.map(x => itemButton(x, 'detail')));
+    const result = await fetchAllApplications({ query: $('find').value.trim() });
+    rows = result.items;
+    $('count').textContent = `พบ ${result.total} รายการ`;
+    $('appList').replaceChildren(...rows.map(record => itemButton(record, 'detail')));
+    if (!rows.length) $('appList').innerHTML = '<p class="muted">ไม่พบรายชื่อผู้สมัคร</p>';
     msg('');
-  } catch (err) { msg(err.message); }
+  } catch (error) {
+    msg('โหลดรายชื่อไม่สำเร็จ: ' + error.message);
+  }
 }
 
 async function loadReview() {
   msg('กำลังโหลดรายการตรวจสอบ...');
   try {
-    const r = await api('getApplications', { stage: 'review' });
+    const r = await fetchAllApplications({ stage: 'review' });
     $('reviewList').replaceChildren(...(r.items || []).map(x => itemButton(x, 'review')));
     msg('');
   } catch (err) { msg(err.message); }
@@ -596,7 +627,7 @@ async function loadReview() {
 async function loadApproval() {
   msg('กำลังโหลดรายการอนุมัติ...');
   try {
-    const r = await api('getApplications', { stage: 'approval', query: $('approvalFind').value.trim() });
+    const r = await fetchAllApplications({ stage: 'approval', query: $('approvalFind').value.trim() });
     $('approvalList').replaceChildren(...(r.items || []).map(x => itemButton(x, 'approval')));
     msg('');
   } catch (err) { msg(err.message); }
@@ -711,6 +742,7 @@ function editRecord(record) {
   editing = record.ApplicationID;
   const form = $('applicationForm');
   const data = {
+    applicationId: record.ApplicationID,
     prefix: record.Prefix, firstName: record.FirstName, lastName: record.LastName,
     birthDate: record.BirthDate, phone: record.Phone, nationality: record.Nationality,
     ethnicity: record.Ethnicity, education: record.Education
@@ -746,7 +778,7 @@ $('applicationForm').onsubmit = async e => {
     const response = await api(action, { applicationId: editing, application: data });
     const id = response.applicationId || editing;
     resetForm();
-    tab('applications');
+    await tab('applications');
     msg('บันทึกสำเร็จ รหัสผู้สมัคร: ' + id);
   } catch (err) { msg(err.message); }
   finally { button.disabled = false; }
