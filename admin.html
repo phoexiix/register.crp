@@ -414,13 +414,28 @@ bridgeFrame.style.display = 'none';
 bridgeFrame.setAttribute('title','CRP API');
 bridgeFrame.src = API_URL + '?page=bridge';
 let bridgeReady = false;
+let bridgeWindow = null;
+let bridgeOrigin = null;
 const pending = new Map();
 const readyWaiters = [];
+function trustedBridgeOrigin(origin) {
+  try { const u = new URL(origin); return u.protocol === 'https:' && (u.hostname === 'script.google.com' || u.hostname === 'script.googleusercontent.com' || u.hostname.endsWith('.googleusercontent.com')); }
+  catch (_) { return false; }
+}
 window.addEventListener('message', event => {
-  if (event.origin !== BRIDGE_ORIGIN && !event.origin.endsWith('.googleusercontent.com')) return;
-  if (event.source !== bridgeFrame.contentWindow || !event.data) return;
-  if (event.data.crp === 'ready') { bridgeReady = true; readyWaiters.splice(0).forEach(fn => fn()); return; }
+  if (!trustedBridgeOrigin(event.origin) || !event.data || typeof event.data !== 'object') return;
+  if (event.data.crp === 'ready') {
+    // Apps Script HTML runs inside Google's nested iframe; capture its actual sender.
+    // Accept readiness only after the iframe was loaded from the configured Apps Script URL.
+    if (!bridgeFrame.isConnected || event.source === window) return;
+    bridgeWindow = event.source;
+    bridgeOrigin = event.origin;
+    bridgeReady = true;
+    readyWaiters.splice(0).forEach(fn => fn());
+    return;
+  }
   if (event.data.crp === 'response') {
+    if (!bridgeReady || event.source !== bridgeWindow || event.origin !== bridgeOrigin) return;
     const item = pending.get(event.data.id); if (!item) return;
     pending.delete(event.data.id); clearTimeout(item.timer);
     event.data.ok ? item.resolve(event.data.data) : item.reject(new Error(event.data.message || 'เกิดข้อผิดพลาด'));
@@ -429,14 +444,20 @@ window.addEventListener('message', event => {
 document.body.appendChild(bridgeFrame);
 async function callServer(action, payload = {}) {
   if (!bridgeReady) await new Promise((resolve,reject) => {
-    const timer = setTimeout(() => reject(new Error('เชื่อมต่อ Apps Script ไม่สำเร็จ: ตรวจสอบ Deploy และ CRP_GITHUB_ORIGIN')),20000);
-    readyWaiters.push(() => {clearTimeout(timer);resolve();});
+    const timer = setTimeout(() => {
+      const index = readyWaiters.indexOf(onReady);
+      if (index !== -1) readyWaiters.splice(index,1);
+      reject(new Error('เชื่อมต่อ Apps Script ไม่สำเร็จ: ตรวจสอบสิทธิ์ Deploy, URL /exec และ CRP_GITHUB_ORIGIN'));
+    },20000);
+    const onReady = () => {clearTimeout(timer);resolve();};
+    readyWaiters.push(onReady);
+    if (bridgeReady) onReady();
   });
   return new Promise((resolve,reject) => {
-    const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
+    const id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
     const timer = setTimeout(() => {pending.delete(id);reject(new Error('เซิร์ฟเวอร์ตอบกลับช้าเกินไป'));},30000);
     pending.set(id,{resolve,reject,timer});
-    bridgeFrame.contentWindow.postMessage({crp:'request',id,action,payload}, '*');
+    bridgeWindow.postMessage({crp:'request',id,action,payload},bridgeOrigin);
   });
 }
 const CRP_API = { call: callServer };
@@ -756,7 +777,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        <p><label>เหตุผลการพิจารณา *</label><textarea id="decisionReason" rows="4" maxlength="2000" placeholder="ระบุเหตุผล"></textarea></p>
        <button id="decisionSave" class="orange">บันทึกผลการอนุมัติ</button>`;
      $('modalBody').append(section);$('decisionSelect').value = ['ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก'].includes(record.Status) ? record.Status : '';
-     $('decisionReason').value = record.DecisionReason \vert{}\vert{} record.AdminNote \vert{}\vert{} '';$('decisionSave').onclick = async () => {
+     $('decisionReason').value = record.DecisionReason || record.AdminNote || '';$('decisionSave').onclick = async () => {
        const status = $('decisionSelect').value;
        const reason = $('decisionReason').value.trim();
        if (!status || !reason) return alert('กรุณาเลือกผลและระบุเหตุผล');
