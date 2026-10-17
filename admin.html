@@ -14,6 +14,7 @@ const CRP_API=(()=>{
  function init(){
   frame=document.createElement('iframe');frame.title='CRP Connector';frame.style.display='none';
   frame.src=GAS_URL+'?bridge=1&origin='+encodeURIComponent(location.origin)+'&channel='+encodeURIComponent(channel);
+  frame.addEventListener('load',()=>{if(!ready)frame.contentWindow.postMessage({crpBridge:true,channel,hello:true},'*');});
   document.body.appendChild(frame);
  }
  window.addEventListener('message',e=>{
@@ -28,7 +29,7 @@ const CRP_API=(()=>{
   let id='r'+Math.random().toString(36).slice(2)+Date.now(),timer=setTimeout(()=>{pending.delete(id);queue=queue.filter(fn=>fn.requestId!==id);reject(new Error('หมดเวลารอการเชื่อมต่อ Google Apps Script: ตรวจสอบ URL /exec, Bridge.html, สิทธิ์ Web App และ ALLOWED_ORIGIN'));},30000);
   pending.set(id,{resolve,reject,timer});
   const send=()=>frame.contentWindow.postMessage({crpBridge:true,channel,id,payload:{action,...data}},'*');
-  if(ready)send();else queue.push(()=>{if(pending.has(id))send();});
+  if(ready)send();else {const queued=()=>{if(pending.has(id))send();};queued.requestId=id;queue.push(queued);}
  });}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
  return {call};
@@ -60,5 +61,5 @@ $('content').addEventListener('click',e=>{let btn=e.target.closest('[data-id]');
 function openApplicant(r){$('modalTitle').textContent=nameOf(r);let info=[['รหัสผู้สมัคร',r.ApplicationID],['ชื่อ-นามสกุล',nameOf(r)],['วันเกิด',r.BirthDate],['โทรศัพท์',r.Phone],['อีเมล',r.Email],['จังหวัด',r.Province],['การศึกษา',r.Education],['เหตุผลในการสมัคร',r.Motivation],['วันที่สมัคร',formatDate(r.SubmittedAt)]];$('modalBody').innerHTML='<div class="toolbar">'+tag(r.Status)+'</div><div class="details">'+info.map(x=>detail(...x)).join('')+'</div><h3 style="margin-top:28px">พิจารณาผลการสมัคร</h3><form id="decision" class="formgrid"><div class="field full"><label>สถานะ</label><select name="status">'+['รอตรวจสอบ','อยู่ระหว่างพิจารณา','ผ่านการคัดเลือก','ไม่ผ่านการคัดเลือก'].map(s=>'<option '+(r.Status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div><div class="field full"><label>หมายเหตุเจ้าหน้าที่ (ไม่แสดงในหน้าสาธารณะ)</label><textarea name="note">'+esc(r.AdminNote)+'</textarea></div><button class="btn orange" id="decisionBtn">บันทึกผลการพิจารณา</button></form>';$('decision').addEventListener('submit',async e=>{e.preventDefault();let b=$('decisionBtn');b.disabled=true;try{let d=Object.fromEntries(new FormData(e.target).entries());await CRP_API.call('update',{token,id:r.ApplicationID,status:d.status,note:d.note});closeModal();await fetchRows();}catch(err){message(err);}finally{b.disabled=false;}});showModal();}
 async function drawSummary(){$('content').innerHTML='<div class="toolbar"><h2>สรุปผลการรับสมัคร</h2><button class="btn secondary" id="sumRefresh">↻ โหลดใหม่</button></div><div id="statContent">กำลังโหลด...</div>';$('sumRefresh').onclick=drawSummary;try{let d=await CRP_API.call('stats',{token});let pairs=[['ผู้สมัครทั้งหมด',d.total],...Object.entries(d.byStatus||{})];$('statContent').innerHTML='<div class="stats">'+pairs.map(([key,val])=>'<div class="stat"><b>'+Number(val).toLocaleString('th-TH')+'</b><span>'+esc(key)+'</span></div>').join('')+'</div>'}catch(e){$('statContent').textContent=e.message;}}
 $('overlay').addEventListener('click',e=>{if(e.target===$('overlay'))closeModal();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-if(token)authenticate(true);
+if(token){CRP_API.call('list',{token}).then(()=>authenticate(true)).catch(()=>{token='';sessionStorage.removeItem('crp_token');authenticate(false);});}
 </script></body></html>

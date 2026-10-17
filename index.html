@@ -13,6 +13,7 @@ const CRP_API=(()=>{
  function init(){
   frame=document.createElement('iframe');frame.title='CRP Connector';frame.style.display='none';
   frame.src=GAS_URL+'?bridge=1&origin='+encodeURIComponent(location.origin)+'&channel='+encodeURIComponent(channel);
+  frame.addEventListener('load',()=>{if(!ready)frame.contentWindow.postMessage({crpBridge:true,channel,hello:true},'*');});
   document.body.appendChild(frame);
  }
  window.addEventListener('message',e=>{
@@ -27,7 +28,7 @@ const CRP_API=(()=>{
   let id='r'+Math.random().toString(36).slice(2)+Date.now(),timer=setTimeout(()=>{pending.delete(id);queue=queue.filter(fn=>fn.requestId!==id);reject(new Error('หมดเวลารอการเชื่อมต่อ Google Apps Script: ตรวจสอบ URL /exec, Bridge.html, สิทธิ์ Web App และ ALLOWED_ORIGIN'));},30000);
   pending.set(id,{resolve,reject,timer});
   const send=()=>frame.contentWindow.postMessage({crpBridge:true,channel,id,payload:{action,...data}},'*');
-  if(ready)send();else queue.push(()=>{if(pending.has(id))send();});
+  if(ready)send();else {const queued=()=>{if(pending.has(id))send();};queued.requestId=id;queue.push(queued);}
  });}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
  return {call};
