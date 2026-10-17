@@ -275,14 +275,14 @@ footer {
  <body>
   <header>
    <nav>
-    <a class="brand" href="<?= appUrl ?>">
+    <a class="brand" href="index.html">
      <img src="https://i.postimg.cc/qMDpFg75/albatross.png" alt="CRP Logo" class="brand-logo">
      CRP
      <b>
       STAFF CENTER
      </b>
     </a>
-    <a class="navlink" href="<?= appUrl ?>">
+    <a class="navlink" href="index.html">
      ← หน้าตรวจสอบผู้สมัคร
     </a>
    </nav>
@@ -615,13 +615,9 @@ footer {
   <footer>
    CRP — Staff Management Center
   </footer>
-  <script>
-   function callServer(action, payload = {}) {
-    return new Promise((resolve, reject) => {
-        google.script.run.withSuccessHandler(resolve).withFailureHandler(e => reject(new Error(e && e.message || 'เชื่อมต่อ Apps Script ไม่สำเร็จ'))).apiRequest(action, payload);
-    });
-}
-const CRP_API = { call: callServer };
+  <script src="connector.js"></script>
+   <script>
+   const CRP_API = { call: callServer };
 function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function dateText(v) { if (!v)
     return '-'; const d = new Date(v); return Number.isNaN(d.getTime()) ? esc(v) : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }); }

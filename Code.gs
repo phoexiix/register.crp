@@ -55,13 +55,29 @@ function setAdminCredentials_(username, password) {
   });
 }
 
+function setGitHubOrigin() {
+  // เปลี่ยนเป็น URL GitHub Pages ของคุณ (เฉพาะ origin ไม่มี path)
+  PropertiesService.getScriptProperties().setProperty('CRP_GITHUB_ORIGIN', 'https://YOUR-USERNAME.github.io');
+}
+
 function doGet(e) {
-  const page = String(e && e.parameter && e.parameter.page || '').toLowerCase() === 'admin' ? 'admin' : 'index';
-  const template = HtmlService.createTemplateFromFile(page);
+  const page = String(e && e.parameter && e.parameter.page || '').toLowerCase();
+  if (page === 'bridge') {
+    const origin = String(e.parameter.origin || '');
+    const allowed = PropertiesService.getScriptProperties().getProperty('CRP_GITHUB_ORIGIN') || '';
+    const channel = String(e.parameter.channel || '');
+    if (!allowed || origin !== allowed || !/^https:\/\/[^/]+$/.test(origin) || !/^[a-zA-Z0-9_-]{16,128}$/.test(channel)) {
+      return HtmlService.createHtmlOutput('CRP bridge access denied');
+    }
+    const bridge = HtmlService.createTemplateFromFile('Bridge');
+    bridge.bridgeOrigin = origin;
+    bridge.bridgeChannel = channel;
+    return bridge.evaluate().setTitle('CRP Connector').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+  const name = page === 'admin' ? 'admin' : 'index';
+  const template = HtmlService.createTemplateFromFile(name);
   template.appUrl = ScriptApp.getService().getUrl() || '';
-  return template.evaluate()
-    .setTitle(page === 'admin' ? 'CRP | เจ้าหน้าที่' : 'CRP | ตรวจสอบผู้สมัคร')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  return template.evaluate().setTitle(name === 'admin' ? 'CRP | เจ้าหน้าที่' : 'CRP | ตรวจสอบผู้สมัคร').addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 function apiRequest(action, payload) {
