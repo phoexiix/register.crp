@@ -637,14 +637,35 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      return CRP_API.call(action, { ...payload, ...session() });
    }
 
+   // วันเกิดอาจถูก Google Sheets ส่งกลับเป็น YYYY-MM-DD หรือ DD/MM/YYYY
+   // (รวมถึงปี พ.ศ. เมื่อชีตกำหนดภาษาไทย) จึงต้องแปลงก่อนคำนวณอายุ
+   function parseBirthDate(value) {
+     const text = String(value == null ? '' : value).trim();
+     if (!text) return null;
+     let day, month, year, matched;
+     if ((matched = text.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[T ]|$)/))) {
+       year = Number(matched[1]); month = Number(matched[2]); day = Number(matched[3]);
+     } else if ((matched = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/))) {
+       // รูปแบบวัน/เดือน/ปีที่ใช้กับ Google Sheets ภาษาไทย
+       day = Number(matched[1]); month = Number(matched[2]); year = Number(matched[3]);
+     } else {
+       return null;
+     }
+     if (year > 2400) year -= 543; // พ.ศ. -> ค.ศ.
+     const birth = new Date(year, month - 1, day);
+     if (birth.getFullYear() !== year || birth.getMonth() !== month - 1 || birth.getDate() !== day) return null;
+     return birth;
+   }
+
    function ageFromDate(value) {
-     if (!value) return '';
-     const parts = value.split('-').map(Number);
-     if (parts.length !== 3) return '';
-     const now = new Date();
-     let age = now.getFullYear() - parts[0];
-     if (now.getMonth() + 1 < parts[1] || (now.getMonth() + 1 === parts[1] && now.getDate() < parts[2])) age--;
-     return age >= 0 ? String(age) + ' ปี' : '';
+     const birth = parseBirthDate(value);
+     if (!birth) return '';
+     const today = new Date();
+     if (birth > today) return '';
+     let age = today.getFullYear() - birth.getFullYear();
+     if (today.getMonth() < birth.getMonth() ||
+         (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
+     return age >= 0 ? age + ' ปี' : '';
    }
 
    function updateAge() {
