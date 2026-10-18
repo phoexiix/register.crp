@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8"><title>CRP Connector</title></head><body>
+<script>
+(function(){
+ 'use strict';
+ const allowedOrigin = <?!= JSON.stringify(allowedOrigin) ?>;
+ const channel = <?!= JSON.stringify(channel) ?>;
+ const actions = new Set(['ping','publicSearch','publicDetails','login','logout',
+   'getApplications','getApplication','addApplication','updateApplication',
+   'saveReview','setApplicationStatus','getSummary','getConfig']);
+ function send(data) {
+   // HTML Service มี iframe ซ้อน: ใช้ top ไม่ใช่ parent
+   window.top.postMessage(Object.assign({channel:channel},data),allowedOrigin);
+ }
+ window.addEventListener('message',function(event){
+   if(event.source!==window.top || event.origin!==allowedOrigin)return;
+   const msg=event.data;
+   if(!msg || msg.crp!=='request' || msg.channel!==channel ||
+      typeof msg.id!=='string' || typeof msg.action!=='string')return;
+   if(!actions.has(msg.action)){
+     send({crp:'response',id:msg.id,ok:false,message:'Method not allowed'});
+     return;
+   }
+   try{
+     google.script.run
+       .withSuccessHandler(function(data){send({crp:'response',id:msg.id,ok:true,data:data});})
+       .withFailureHandler(function(error){
+         send({crp:'response',id:msg.id,ok:false,
+           message:error && error.message ? error.message : String(error)});
+       }).apiRequest(msg.action,msg.payload||{});
+   }catch(error){
+     send({crp:'response',id:msg.id,ok:false,
+       message:error && error.message ? error.message : String(error)});
+   }
+ });
+ send({crp:'ready'});
+})();
+</script></body></html>
