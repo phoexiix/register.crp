@@ -48,7 +48,11 @@
    .stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 14px }
    .stat { border-radius: 15px; background: #f0f5ff; padding: 20px }
    .stat strong { display: block; font-size: 30px; color: #544db0 }
-   .tabs { display: flex; flex-wrap: wrap; gap: 9px }
+   /* Navigation: exactly two balanced rows of four buttons */
+   .tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: stretch }
+   .tabs button { width: 100%; min-width: 0; min-height: 68px; padding: 12px 8px; display: flex; align-items: center; justify-content: center; text-align: center; white-space: normal; overflow-wrap: anywhere; line-height: 1.35 }
+   @media (max-width: 600px) { .tabs { gap: 6px } .tabs button { font-size: 12px; min-height: 84px; padding: 8px 3px; line-height: 1.3 } }
+   @media (max-width: 390px) { .tabs button { font-size: 11px; min-height: 92px; padding: 7px 2px } }
    .tabs button { background: #e8efff; color: #4d5e8d }
    .tabs button.active { background: #6555cb; color: white }
    .hidden { display: none!important }
@@ -130,6 +134,19 @@ button, .btn { font-size: 17px; line-height: 1.45; }
 .pill[data-status="รอตรวจร่างกาย"]{background:#e5edff;color:#254eaa;border:1px solid #a9c3ff}
 .pill[data-status="ผ่านการคัดเลือกเข้ารับการฝึก"]{background:#d9f6e6;color:#126c43;border:1px solid #8ad4a8}
 .pill[data-status="ไม่ผ่านการตรวจร่างกาย"]{background:#ffe1e1;color:#a52332;border:1px solid #f2aab0}
+
+/* Keep all eight navigation buttons in a 4 x 2 layout at every screen size. */
+@media (max-width: 600px) { .tabs button { font-size: 12px; } }
+@media (max-width: 390px) { .tabs button { font-size: 11px; } }
+
+/* Applicant summary displayed only while checking qualifications */
+.review-applicant-info{margin:0 0 20px;padding:18px;background:#f3f7ff;border:1px solid #cbdaf4;border-radius:14px}
+.review-applicant-info h3{margin:0 0 12px;color:#254d9a;font-size:20px}
+.review-applicant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px}
+.review-applicant-field{display:flex;flex-direction:column;gap:3px;min-width:0}
+.review-applicant-field .review-applicant-label{font-size:15px;color:#566a89;font-weight:600}
+.review-applicant-field strong{font-size:19px;color:#1e304b;line-height:1.5;overflow-wrap:anywhere}
+@media(max-width:520px){.review-applicant-grid{grid-template-columns:1fr}.review-applicant-info{padding:15px}}
 </style>
  </head>
  <body>
@@ -208,11 +225,11 @@ button, .btn { font-size: 17px; line-height: 1.45; }
       <button data-tab="reviewFailed">
        ไม่ผ่านการตรวจสอบ
       </button>
-      <button data-tab="medical">การตรวจร่างกาย</button>
-      <button data-tab="training">ผู้ผ่านการคัดเลือกเข้ารับการฝึก</button>
       <button data-tab="approval">
        การอนุมัติ
       </button>
+      <button data-tab="medical">การตรวจร่างกาย</button>
+      <button data-tab="training">ผู้ผ่านการคัดเลือกเข้ารับการฝึก</button>
      </div>
      <p class="message" id="appMsg">
      </p>
@@ -958,7 +975,19 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      const checks = parseReview(record);
      const section = document.createElement('section');
      section.className = 'card';
-     section.innerHTML = `<h3>รายการตรวจสอบข้อมูล</h3><p class="muted">เลือกผลตรวจสอบให้ครบทุกหัวข้อ</p>`;
+     const applicantName = [record.Prefix, record.FirstName, record.LastName].filter(Boolean).join(' ');
+     const birthText = /^\d{4}-\d{2}-\d{2}$/.test(String(record.BirthDate || ''))
+       ? String(record.BirthDate).split('-').reverse().join('/')
+       : (record.BirthDate || '-');
+     section.innerHTML = `<div class="review-applicant-info">
+       <h3>ข้อมูลผู้สมัครที่กำลังตรวจสอบ</h3>
+       <div class="review-applicant-grid">
+         <div class="review-applicant-field"><span class="review-applicant-label">ชื่อ–สกุล</span><strong>${esc(applicantName || '-')}</strong></div>
+         <div class="review-applicant-field"><span class="review-applicant-label">อายุ</span><strong>${esc(ageFromDate(record.BirthDate) || '-')}</strong></div>
+         <div class="review-applicant-field"><span class="review-applicant-label">วันเดือนปีเกิด</span><strong>${esc(birthText)}</strong></div>
+         <div class="review-applicant-field"><span class="review-applicant-label">สัญชาติ</span><strong>${esc(record.Nationality || '-')}</strong></div>
+       </div>
+     </div><h3>รายการตรวจสอบข้อมูล</h3><p class="muted">เลือกผลตรวจสอบให้ครบทุกหัวข้อ</p>`;
      const passAll = document.createElement('button');
      passAll.type = 'button'; passAll.className = 'ghost';
      passAll.textContent = '✓ ผ่านทั้งหมด (ยกเว้นข้อหนังสืออนุมัติ)';
