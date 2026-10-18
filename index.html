@@ -204,7 +204,7 @@ async function loadPublicSummary(silent=false) {
     }
     const fields={total:'countTotal',pendingReview:'countPendingReview',failedReview:'countFailedReview',pendingApproval:'countPendingApproval',pendingMedical:'countPendingMedical',selected:'countSelected'};
     for(const [key,id] of Object.entries(fields)) $(id).textContent=counts[key].toLocaleString('th-TH');
-    $('publicSummaryMessage').textContent='อัปเดตจำนวนจากรายชื่อผู้สมัครอัตโนมัติทุก 15 วินาที';
+    $('publicSummaryMessage').textContent='อัปเดตจำนวนจากรายชื่อผู้สมัครอัตโนมัติทุก 5 วินาที';
   } catch(error) {
     $('publicSummaryMessage').textContent='โหลดจำนวนผู้สมัครไม่สำเร็จ: '+error.message;
   } finally {publicSummaryBusy=false;}
@@ -232,7 +232,7 @@ async function loadTraining(silent=false){
  finally{trainingBusy=false}
 }
 $('trainingSearchForm').onsubmit=e=>{e.preventDefault();loadTraining();};$('groupFilter').onchange=()=>loadTraining();
-setInterval(() => {search(true);loadTraining(true);loadPublicSummary(true)}, 15000);
+setInterval(() => {search(true);loadTraining(true);loadPublicSummary(true)}, 5000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) {search(true);loadTraining(true);loadPublicSummary(true)} });
 async function show(id){$('overlay').classList.remove('hidden');$('details').textContent='กำลังโหลด...';try{const x=await CRP_API.call('publicDetails',{applicationId:id});$('details').innerHTML=`<dl><dt>รหัสผู้สมัคร</dt><dd>${esc(x.applicationId)}</dd><dt>ชื่อ-นามสกุล</dt><dd>${esc(x.fullName)}</dd><dt>จังหวัด</dt><dd>${esc(x.province||'-')}</dd><dt>ระดับการศึกษา</dt><dd>${esc(x.education||'-')}</dd><dt>การลงทะเบียน</dt><dd>${esc(x.registration)}</dd><dt>ขั้นตอนตรวจร่างกาย</dt><dd>${esc(x.medicalStatus||'ยังไม่ถึงขั้นตอน')}</dd><dt>กลุ่มฝึก</dt><dd>${esc(x.trainingGroup||'ยังไม่ได้จัดกลุ่ม')}</dd><dt>ผลการพิจารณา</dt><dd><span class="pill" data-status="${esc(x.status)}">${esc(x.status)}</span></dd></dl>`;}catch(e){$('details').textContent=e.message;}}
 $('searchForm').onsubmit=e=>{e.preventDefault();search();};$('close').onclick=()=>$('overlay').classList.add('hidden');$('overlay').onclick=e=>{if(e.target===$('overlay'))$('close').click();};search();loadTraining();loadPublicSummary();

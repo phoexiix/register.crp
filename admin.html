@@ -25,6 +25,10 @@
    button,.btn { background: #6555cb; color: white; border: 0; border-radius: 11px; padding: 12px 19px; font-weight: 750; cursor: pointer; font: inherit; text-decoration: none; display: inline-block }
    button:hover { filter: brightness(.96) }
    .orange { background: #f18b39 }
+   .decision-quick-reasons { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: -3px 0 20px }
+   .decision-quick-title { width: 100%; color: #52637d; font-size: 14px; font-weight: 700 }
+   .decision-quick-button { padding: 10px 15px; border: 1px solid #cdd9f5; }
+
    .ghost { background: #e9efff; color: #4257a2 }
    .danger { background: #fbe8e8; color: #a43333 }
    .search { display: flex; gap: 10px }
@@ -709,7 +713,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      else if (name === 'training') await loadTraining();
    }
    // Live updates via background polling: no page reload, no menu change.
-   // Apps Script does not provide a push stream; check every 15 seconds.
+   // Apps Script does not provide a push stream; check every 5 seconds.
    let liveBusy = false;
    async function updateVisibleData() {
      if (liveBusy || !token || document.hidden ||
@@ -723,7 +727,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      catch (err) { console.warn('CRP background update:', err); }
      finally { backgroundRefresh = false; liveBusy = false; }
    }
-   setInterval(updateVisibleData, 15000);
+   setInterval(updateVisibleData, 5000);
    document.addEventListener('visibilitychange', () => {
      if (!document.hidden) updateVisibleData();
    });
@@ -1152,10 +1156,9 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      $('modalTitle').textContent = 'เลือกกลุ่มฝึก';
      $('modalBody').innerHTML = `<p class="muted">ผู้สมัครได้รับอนุมัติแล้ว กรุณาเลือกกลุ่มฝึกสำหรับขั้นตอนถัดไป</p>
        <p><strong>รหัสผู้สมัคร: ${esc(applicationId)}</strong></p>
-       ${currentGroup && !['1/1','1/2','2/1','2/2','3/1','3/2','4/1','4/2'].includes(currentGroup) ? `<p class="muted">กลุ่มเดิม: ${esc(currentGroup)} — กรุณาเลือกกลุ่มย่อยใหม่</p>` : ''}
        <div class="card"><label for="trainingGroupSelect">กลุ่มฝึก *</label>
        <select id="trainingGroupSelect"><option value="">-- เลือกกลุ่มฝึก --</option>
-       ${['1/1','1/2','2/1','2/2','3/1','3/2','4/1','4/2'].map(g=>`<option value="${g}" ${g===currentGroup?'selected':''}>${g}</option>`).join('')}
+       ${['กลุ่มที่ 1','กลุ่มที่ 2','กลุ่มที่ 3','กลุ่มที่ 4'].map(g=>`<option value="${g}" ${g===currentGroup?'selected':''}>${g}</option>`).join('')}
        </select><p class="muted">สามารถเปลี่ยนกลุ่มได้ภายหลังในเมนูการตรวจร่างกาย</p>
        <button type="button" class="orange" id="saveTrainingGroup">บันทึกกลุ่มฝึก</button></div>`;
      $('saveTrainingGroup').onclick = async () => {
@@ -1185,11 +1188,24 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        <label for="decisionSelect">ผลการสมัคร</label>
        <select id="decisionSelect"><option value="">เลือกผลการสมัคร</option>${options}</select>
        <p><label for="decisionReason" id="decisionReasonLabel">เหตุผลการพิจารณา *</label><textarea id="decisionReason" rows="4" maxlength="1900" placeholder="ระบุเหตุผล"></textarea></p>
+       <div class="decision-quick-reasons" role="group" aria-label="ข้อความเหตุผลสำเร็จรูป">
+         <span class="decision-quick-title">ข้อความสำเร็จรูป (กดเพื่อใส่ในช่องเหตุผล)</span>
+         <button type="button" class="ghost decision-quick-button" data-decision-reason="ผ่านการตรวจสอบ">ผ่านการตรวจสอบ</button>
+         <button type="button" class="ghost decision-quick-button" data-decision-reason="ไม่ผ่านการตรวจสอบ">ไม่ผ่านการตรวจสอบ</button>
+       </div>
        <button type="button" id="decisionSave" class="orange">บันทึกผลการอนุมัติ</button>`;
      $('modalBody').append(section);
      const choice = $('decisionSelect');
      const notes = $('decisionReason');
      const noteLabel = $('decisionReasonLabel');
+     section.querySelectorAll('[data-decision-reason]').forEach(button => {
+       button.addEventListener('click', () => {
+         notes.value = button.dataset.decisionReason;
+         notes.dispatchEvent(new Event('input', { bubbles: true }));
+         notes.focus();
+         notes.setSelectionRange(notes.value.length, notes.value.length);
+       });
+     });
      const updateHint = () => {
        const noQualification = choice.value === 'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)';
        noteLabel.textContent = noQualification ? 'รายละเอียดเพิ่มเติม (ไม่บังคับ)' : 'เหตุผลการพิจารณา *';
