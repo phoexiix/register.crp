@@ -25,6 +25,14 @@
    button,.btn { background: #6555cb; color: white; border: 0; border-radius: 11px; padding: 12px 19px; font-weight: 750; cursor: pointer; font: inherit; text-decoration: none; display: inline-block }
    button:hover { filter: brightness(.96) }
    .orange { background: #f18b39 }
+
+   /* Reasons from the actual saved qualification review, visible only on the special-approval screen */
+   .approval-failed-summary{border:1px solid #ecc1c7;background:#fff5f6;border-radius:15px;padding:18px 20px;margin:15px 0 21px;color:#672d38}
+   .approval-failed-summary h4{font-size:19px;line-height:1.4;color:#9c3040;margin:0 0 8px}
+   .approval-failed-summary p{margin:5px 0 12px;color:#76515b;font-size:15px}
+   .approval-failed-list{margin:0;padding-left:24px;display:grid;gap:9px}
+   .approval-failed-list li{font-weight:700;font-size:17px;line-height:1.5;padding-left:3px;overflow-wrap:anywhere}
+   .approval-failed-note{font-size:15px;color:#80535b;margin:7px 0 0}
    .decision-quick-reasons { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: -3px 0 20px }
    .decision-quick-title { width: 100%; color: #52637d; font-size: 14px; font-weight: 700 }
    .decision-quick-button { padding: 10px 15px; border: 1px solid #cdd9f5; }
@@ -1273,6 +1281,19 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    function renderApproval(record, isFailed = false) {
      const section = document.createElement('section');
      section.className = 'card';
+     // Read the saved check-by-check result; never infer rejection reasons from general applicant data.
+     const savedChecks = isFailed ? parseReview(record) : {};
+     const failedChecks = isFailed
+       ? CHECKS.map((name, index) => ({ name, number: index + 1 }))
+           .filter(item => savedChecks[item.name] === 'ไม่ผ่าน')
+       : [];
+     const failedSummary = !isFailed ? '' : `<div class="approval-failed-summary" role="region" aria-label="หัวข้อที่ไม่ผ่านการตรวจสอบ">
+       <h4>ข้อที่ไม่ผ่านการตรวจสอบ ${failedChecks.length ? `(${failedChecks.length} ข้อ)` : ''}</h4>
+       ${failedChecks.length
+         ? `<p>ผลการตรวจสอบคุณสมบัติที่บันทึกไว้ของผู้สมัครรายนี้</p>
+           <ul class="approval-failed-list">${failedChecks.map(item => `<li>ข้อ ${item.number}. ${esc(item.name)}</li>`).join('')}</ul>`
+         : '<p class="approval-failed-note">ไม่พบรายละเอียดหัวข้อที่ระบุว่า “ไม่ผ่าน” ในผลการตรวจสอบที่บันทึกไว้ กรุณาตรวจสอบข้อมูลก่อนพิจารณาอนุมัติ</p>'}
+     </div>`;
      const options = isFailed
        ? `<option value="ผ่านการคัดเลือก (กรณีพิเศษ)">อนุมัติ — ผ่านการคัดเลือก (กรณีพิเศษ)</option>
           <option value="ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)">ไม่อนุมัติ — ไม่ผ่านคุณสมบัติ</option>`
@@ -1280,6 +1301,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
           <option value="ไม่ผ่านการคัดเลือก">ไม่ผ่านการสมัคร</option>`;
      section.innerHTML = `<h3>${isFailed ? 'พิจารณาผู้สมัครไม่ผ่านคุณสมบัติ' : 'อนุมัติผลการสมัคร'}</h3>
        ${isFailed ? '<p class="muted">หากอนุมัติ ต้องบันทึกเหตุผลการยกเว้นเป็นกรณีพิเศษ หากไม่อนุมัติ ระบบจะบันทึกสาเหตุว่าไม่ผ่านคุณสมบัติ</p>' : ''}
+       ${failedSummary}
        <label for="decisionSelect">ผลการสมัคร</label>
        <select id="decisionSelect"><option value="">เลือกผลการสมัคร</option>${options}</select>
        <p><label for="decisionReason" id="decisionReasonLabel">เหตุผลการพิจารณา *</label><textarea id="decisionReason" rows="4" maxlength="1900" placeholder="ระบุเหตุผล"></textarea></p>
