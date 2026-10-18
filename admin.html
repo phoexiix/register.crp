@@ -153,6 +153,18 @@ button, .btn { font-size: 17px; line-height: 1.45; }
 @media(max-width:700px){.review-applicant-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){.review-applicant-grid{grid-template-columns:1fr}.review-applicant-info{padding:15px}}
 .review-pass-all-actions{display:flex;justify-content:flex-end;margin-bottom:14px}
+   .crp-notice-layer{position:fixed;inset:0;z-index:9999;background:rgba(12,25,49,.58);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+   .crp-notice-card{width:min(100%,420px);padding:30px 26px 24px;background:#fff;border:1px solid #e3e9f5;border-radius:20px;box-shadow:0 24px 70px rgba(10,27,55,.24);text-align:center;color:#20314b}
+   .crp-notice-card h3{margin:12px 0 9px;font-size:21px;font-weight:800}
+   .crp-notice-card p{margin:0 0 21px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65;color:#53647c;font-size:15px}
+   .crp-notice-card button{min-width:120px;padding:11px 25px;border-radius:11px}
+   .crp-notice-icon{display:grid;place-items:center;margin:auto;width:56px;height:56px;border-radius:50%;font-size:30px;font-weight:800;background:#e8f0ff;color:#3158ad}
+   .crp-notice-layer[data-kind="success"] .crp-notice-icon{background:#e6f7ee;color:#168352}
+   .crp-notice-layer[data-kind="error"] .crp-notice-icon{background:#fff0ef;color:#cb3543}
+   .crp-notice-layer[data-kind="loading"] .crp-notice-icon{background:transparent}
+   .crp-spinner{display:block;width:48px;height:48px;border-radius:50%;border:5px solid #e1e8fa;border-top-color:#3158ad;animation:crp-spin .8s linear infinite}
+   @keyframes crp-spin{to{transform:rotate(360deg)}}
+   @media(prefers-reduced-motion:reduce){.crp-spinner{animation-duration:1.8s}}
 </style>
  </head>
  <body>
@@ -648,75 +660,82 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    const msg = text => { if (backgroundRefresh) return; $('appMsg').textContent = text || ''; if (/(เชื่อมต่อ Apps Script|เซิร์ฟเวอร์ตอบกลับช้า)/.test(String(text))) crpShowDirectLink($('appMsg')); };
    const session = () => ({ token });
 
+   // Single notification controller: one popup, no racing success/error timers.
    const crpNoticeLayer = $('crpNoticeLayer');
    const crpNoticeIcon = $('crpNoticeIcon');
    const crpNoticeTitle = $('crpNoticeTitle');
    const crpNoticeText = $('crpNoticeText');
    const crpNoticeOk = $('crpNoticeOk');
    let crpNoticeTimer = null;
-   let crpBusyRequests = 0;
+   let crpActiveWrites = 0;
+   let crpNoticeSequence = 0;
    function crpHideNotice() {
-     if (crpBusyRequests > 0) return;
+     if (crpActiveWrites) return;
      clearTimeout(crpNoticeTimer);
      crpNoticeLayer.classList.add('hidden');
    }
    function crpNotice(message, title='แจ้งเตือน', kind='info') {
-     if (crpBusyRequests > 0) return;
+     if (crpActiveWrites) return;
      clearTimeout(crpNoticeTimer);
-     crpNoticeIcon.textContent = kind==='error' ? '!' : '✓';
-     crpNoticeIcon.className = 'crp-notice-icon';
-     crpNoticeTitle.textContent = title;
-     crpNoticeText.textContent = String(message||'');
+     const seq=++crpNoticeSequence;
+     crpNoticeLayer.dataset.kind=kind;
+     crpNoticeIcon.replaceChildren();
+     crpNoticeIcon.textContent=kind==='error' ? '!' : kind==='success' ? '✓' : 'i';
+     crpNoticeTitle.textContent=title;
+     crpNoticeText.textContent=String(message||'');
      crpNoticeOk.classList.remove('hidden');
      crpNoticeLayer.classList.remove('hidden');
+     crpNoticeOk.focus({preventScroll:true});
+     if (kind==='success') crpNoticeTimer=setTimeout(()=>{
+       if(seq===crpNoticeSequence && !crpActiveWrites) crpHideNotice();
+     },1800);
    }
-   crpNoticeOk.onclick = crpHideNotice;
+   crpNoticeOk.onclick=crpHideNotice;
    function crpBusyStart(action) {
-     crpBusyRequests++;
+     crpActiveWrites++;
      clearTimeout(crpNoticeTimer);
+     ++crpNoticeSequence;
+     crpNoticeLayer.dataset.kind='loading';
      crpNoticeIcon.replaceChildren();
      const spinner=document.createElement('span');
      spinner.className='crp-spinner';
      crpNoticeIcon.append(spinner);
-     crpNoticeTitle.textContent = 'กำลังดำเนินการ';
-     crpNoticeText.textContent = ({
+     crpNoticeTitle.textContent='กำลังบันทึกข้อมูล';
+     crpNoticeText.textContent=({
        addApplication:'กำลังเพิ่มข้อมูลผู้สมัคร...',
        updateApplication:'กำลังบันทึกการแก้ไขข้อมูล...',
        saveReview:'กำลังบันทึกผลตรวจสอบ...',
        setApplicationStatus:'กำลังบันทึกผลอนุมัติ...',
        saveTrainingGroup:'กำลังบันทึกกลุ่มฝึก...',
        saveMedicalReview:'กำลังบันทึกผลตรวจร่างกาย...'
-     })[action] || 'กำลังบันทึกข้อมูล กรุณารอสักครู่...';
+     })[action]||'กำลังบันทึกข้อมูล กรุณารอสักครู่...';
      crpNoticeOk.classList.add('hidden');
      crpNoticeLayer.classList.remove('hidden');
    }
-   function crpBusyEnd() {
-     crpBusyRequests=Math.max(0,crpBusyRequests-1);
-     if (!crpBusyRequests) crpNoticeLayer.classList.add('hidden');
-   }
-   const CRP_WRITE_ACTIONS = new Set(['addApplication','updateApplication','saveReview','setApplicationStatus','saveTrainingGroup','saveMedicalReview']);
-   async function api(action, payload = {}) {
+   const CRP_WRITE_ACTIONS=new Set(['addApplication','updateApplication','saveReview','setApplicationStatus','saveTrainingGroup','saveMedicalReview']);
+   async function api(action,payload={}) {
      const writing=CRP_WRITE_ACTIONS.has(action);
      if(writing) crpBusyStart(action);
+     let result, failure=null;
      try {
-       const result=await CRP_API.call(action, { ...payload, ...session() });
-       if(writing && action!=='setApplicationStatus') {
-         setTimeout(() => crpNotice('บันทึกข้อมูลสำเร็จ','สำเร็จ'), 0);
+       result=await CRP_API.call(action,{...payload,...session()});
+     } catch(error) { failure=error; }
+     finally { if(writing) crpActiveWrites=Math.max(0,crpActiveWrites-1); }
+     if(writing && !crpActiveWrites) {
+       if(failure) {
+         const detail=String(failure?.message||failure);
+         crpNotice(detail==='Method not allowed' && action==='saveTrainingGroup'
+           ? 'ระบบหลังบ้านยังไม่อนุญาตการบันทึกกลุ่มฝึก กรุณาตรวจสอบ Bridge.html และ Deploy เวอร์ชันใหม่'
+           : detail,'บันทึกไม่สำเร็จ','error');
+       } else if(action==='setApplicationStatus') {
+         // The approval flow immediately opens the training-group selector.
+         crpHideNotice();
+       } else {
+         crpNotice('บันทึกข้อมูลเรียบร้อยแล้ว','บันทึกสำเร็จ','success');
        }
-       return result;
-     } catch(error) {
-       if(writing) {
-         const details=String(error?.message||error);
-         setTimeout(() => crpNotice(
-           details==='Method not allowed' && action==='saveTrainingGroup'
-             ? 'Bridge.html บน Apps Script ยังไม่อนุญาตคำสั่ง saveTrainingGroup กรุณาแทนที่ Bridge.html และ Deploy เวอร์ชันใหม่'
-             : details,
-           'ดำเนินการไม่สำเร็จ','error'));
-       }
-       throw error;
-     } finally {
-       if(writing) crpBusyEnd();
      }
+     if(failure) throw failure;
+     return result;
    }
 
    // วันเกิดอาจถูก Google Sheets ส่งกลับเป็น YYYY-MM-DD หรือ DD/MM/YYYY
