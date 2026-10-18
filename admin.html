@@ -590,7 +590,8 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    let token = '';
    let editing = '';
    let rows = [];
-   const msg = text => { $('appMsg').textContent = text || ''; if (/(เชื่อมต่อ Apps Script|เซิร์ฟเวอร์ตอบกลับช้า)/.test(String(text))) crpShowDirectLink($('appMsg')); };
+   let backgroundRefresh = false;
+   const msg = text => { if (backgroundRefresh) return; $('appMsg').textContent = text || ''; if (/(เชื่อมต่อ Apps Script|เซิร์ฟเวอร์ตอบกลับช้า)/.test(String(text))) crpShowDirectLink($('appMsg')); };
    const session = () => ({ token });
 
    async function api(action, payload = {}) {
@@ -641,6 +642,25 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      else if (name === 'reviewFailed') await loadReviewFailed();
      else if (name === 'approval') await loadApproval();
    }
+   // Live updates via background polling: no page reload, no menu change.
+   // Apps Script does not provide a push stream; check every 15 seconds.
+   let liveBusy = false;
+   async function updateVisibleData() {
+     if (liveBusy || !token || document.hidden ||
+         !$('overlay').classList.contains('hidden')) return;
+     const active = document.querySelector('[data-tab].active');
+     const name = active?.dataset.tab;
+     if (!['summary','applications','review','reviewFailed','approval'].includes(name)) return;
+     liveBusy = true;
+     backgroundRefresh = true;
+     try { await refreshCurrentTab(); }
+     catch (err) { console.warn('CRP background update:', err); }
+     finally { backgroundRefresh = false; liveBusy = false; }
+   }
+   setInterval(updateVisibleData, 15000);
+   document.addEventListener('visibilitychange', () => {
+     if (!document.hidden) updateVisibleData();
+   });
    document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => tab(b.dataset.tab));
 
    $('loginForm').onsubmit = async e => {
@@ -699,7 +719,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      line.className = 'item';
      const name = [record.Prefix, record.FirstName, record.LastName].filter(Boolean).join(' ');
      const actionLabel = mode === 'review' ? 'แก้ไขผลตรวจสอบ' : 'จัดการอนุมัติ';
-     line.innerHTML = `<span><strong>${esc(name)}</strong><small class="muted"> (${esc(record.ApplicationID)})</small></span><button class="orange" type="button">${actionLabel}</button>`;
+     line.innerHTML = `<span><strong>${esc(name)}</strong><br><small class="muted">${esc(record.ApplicationID)}</small></span><button class="orange" type="button">${actionLabel}</button>`;
      line.querySelector('button').addEventListener('click', () => { openRecord(record.ApplicationID, mode); });
      return line;
    }

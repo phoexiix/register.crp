@@ -111,7 +111,38 @@ function crpShowDirectLink(element) {
   element.append(document.createElement('br'),a);
 }
 const CRP_API={call:callServer};function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}const $=id=>document.getElementById(id);let items=[];
-async function search(){$('msg').textContent='กำลังค้นหาข้อมูล...';$('results').innerHTML='';try{const r=await CRP_API.call('publicSearch',{query:$('query').value.trim()});items=r.items||[];$('msg').textContent=`พบข้อมูล ${r.total||0} รายการ`;for(const x of items){const b=document.createElement('button');b.className='item';b.innerHTML=`<span><strong>${esc(x.fullName)}</strong><br><small class="muted">${esc(x.applicationId)}</small></span><span class="pill" data-status="${esc(x.status)}">${esc(x.status)}</span>`;b.onclick=()=>show(x.applicationId);$('results').append(b);}}catch(e){$('msg').textContent=e.message;crpShowDirectLink($('msg'));}}
+let publicBusy = false;
+let lastResultsKey = '';
+async function search(silent = false) {
+  if (publicBusy) return;
+  if (silent && (document.hidden || !$('overlay').classList.contains('hidden'))) return;
+  publicBusy = true;
+  if (!silent) $('msg').textContent = 'กำลังค้นหาข้อมูล...';
+  try {
+    const r = await CRP_API.call('publicSearch', {query:$('query').value.trim()});
+    const fresh = r.items || [];
+    const key = JSON.stringify(fresh);
+    items = fresh;
+    if (key !== lastResultsKey) {
+      lastResultsKey = key;
+      const fragment = document.createDocumentFragment();
+      for (const x of items) {
+        const b = document.createElement('button');
+        b.className = 'item';
+        b.innerHTML = `<span><strong>${esc(x.fullName)}</strong><br><small class="muted">${esc(x.applicationId)}</small></span><span class="pill" data-status="${esc(x.status)}">${esc(x.status)}</span>`;
+        b.onclick = () => show(x.applicationId);
+        fragment.append(b);
+      }
+      $('results').replaceChildren(fragment);
+    }
+    $('msg').textContent = `พบข้อมูล ${r.total || 0} รายการ`;
+  } catch(e) {
+    if (!silent) { $('msg').textContent = e.message; crpShowDirectLink($('msg')); }
+    else console.warn('CRP background update:', e);
+  } finally { publicBusy = false; }
+}
+setInterval(() => search(true), 15000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) search(true); });
 async function show(id){$('overlay').classList.remove('hidden');$('details').textContent='กำลังโหลด...';try{const x=await CRP_API.call('publicDetails',{applicationId:id});$('details').innerHTML=`<dl><dt>รหัสผู้สมัคร</dt><dd>${esc(x.applicationId)}</dd><dt>ชื่อ-นามสกุล</dt><dd>${esc(x.fullName)}</dd><dt>จังหวัด</dt><dd>${esc(x.province||'-')}</dd><dt>ระดับการศึกษา</dt><dd>${esc(x.education||'-')}</dd><dt>การลงทะเบียน</dt><dd>${esc(x.registration)}</dd><dt>ผลการพิจารณา</dt><dd><span class="pill" data-status="${esc(x.status)}">${esc(x.status)}</span></dd></dl>`;}catch(e){$('details').textContent=e.message;}}
 $('searchForm').onsubmit=e=>{e.preventDefault();search();};$('close').onclick=()=>$('overlay').classList.add('hidden');$('overlay').onclick=e=>{if(e.target===$('overlay'))$('close').click();};search();
 </script></body></html>
