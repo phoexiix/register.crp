@@ -104,6 +104,13 @@ button, .btn { font-size: 17px; line-height: 1.45; }
   .pill { font-size: 14px; }
 }
 
+
+.pill[data-status="รอตรวจสอบ"],.pill[data-status="รอตรวจสอบข้อมูล"]{background:#fff1c2;color:#815500;border:1px solid #edce72}
+.pill[data-status="ไม่ผ่านการตรวจสอบ"]{background:#ffe1e1;color:#a52332;border:1px solid #f2aab0}
+.pill[data-status="อยู่ระหว่างพิจารณา"],.pill[data-status="รอการอนุมัติ"]{background:#e5edff;color:#254eaa;border:1px solid #a9c3ff}
+.pill[data-status="ผ่านการคัดเลือก"]{background:#d9f6e6;color:#126c43;border:1px solid #8ad4a8}
+.pill[data-status="ไม่ผ่านการคัดเลือก"]{background:#f9dce6;color:#97294c;border:1px solid #e8a4bc}
+.pill[data-status="ลงทะเบียนสำเร็จ"]{background:#e1f4f4;color:#14656c;border:1px solid #a0d4d7}
 </style>
  </head>
  <body>
@@ -613,6 +620,15 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      if (name === 'reviewFailed') await loadReviewFailed();
      if (name === 'approval') await loadApproval();
    }
+   async function refreshCurrentTab() {
+     const active = document.querySelector('[data-tab].active');
+     const name = active ? active.dataset.tab : 'summary';
+     if (name === 'summary') await loadSummary();
+     else if (name === 'applications') await loadList();
+     else if (name === 'review') await loadReview();
+     else if (name === 'reviewFailed') await loadReviewFailed();
+     else if (name === 'approval') await loadApproval();
+   }
    document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => tab(b.dataset.tab));
 
    $('loginForm').onsubmit = async e => {
@@ -651,7 +667,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
          .map(([k, v]) => `<div class="item"><span>${esc(k)}</span><strong>${Number(v)}</strong></div>`).join('')
          || '<p class="muted">ยังไม่มีข้อมูล</p>';
        $('latest').innerHTML = (r.latest || [])
-         .map(x => `<div class="item"><span>${esc(x.fullName)}<br><small>${esc(x.applicationId)}</small></span><span class="pill">${esc(x.status)}</span></div>`)
+         .map(x => `<div class="item"><span>${esc(x.fullName)}<br><small>${esc(x.applicationId)}</small></span><span class="pill" data-status="${esc(x.status)}">${esc(x.status)}</span></div>`)
          .join('') || '<p class="muted">ยังไม่มีข้อมูล</p>';
        msg('');
      } catch (err) { msg(err.message); }
@@ -661,7 +677,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      const button = document.createElement('button');
      const name = [record.Prefix, record.FirstName, record.LastName].filter(Boolean).join(' ');
      button.className = 'item';
-     button.innerHTML = `<span><strong>${esc(name)}</strong><br><small class="muted">${esc(record.ApplicationID)}</small></span><span class="pill">${esc(stageOf(record))}</span>`;
+     button.innerHTML = `<span><strong>${esc(name)}</strong><br><small class="muted">${esc(record.ApplicationID)}</small></span><span class="pill" data-status="${esc(stageOf(record))}">${esc(stageOf(record))}</span>`;
      button.onclick = () => openRecord(record.ApplicationID, mode);
      return button;
    }
@@ -888,10 +904,10 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
          const result = await api('saveReview', { applicationId: record.ApplicationID, checks: results });
          closeModal();
          if (result.reviewStatus === 'ตรวจสอบแล้ว') {
-           await tab('approval');
+           await refreshCurrentTab();
            msg('ผ่านการตรวจสอบครบทุกหัวข้อ ส่งเข้าหน้าการอนุมัติแล้ว');
          } else {
-           await tab('reviewFailed');
+           await refreshCurrentTab();
            msg('มีหัวข้อไม่ผ่าน ส่งเข้าหน้าไม่ผ่านการตรวจสอบแล้ว');
          }
        } catch (err) { alert(err.message); }
@@ -922,7 +938,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        try {
          await api('setApplicationStatus', { applicationId: record.ApplicationID, status, reason });
          closeModal();
-         tab('approval');
+         await refreshCurrentTab();
          msg('บันทึกผลการอนุมัติสำเร็จ');
        } catch (err) { alert(err.message); }
        finally { button.disabled = false; }
@@ -971,7 +987,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        const response = await api(action, { applicationId: editing, application: data });
        const id = response.applicationId || editing;
        resetForm();
-       await tab('applications');
+       await refreshCurrentTab();
        msg('บันทึกสำเร็จ รหัสผู้สมัคร: ' + id);
      } catch (err) { msg(err.message); }
      finally { button.disabled = false; }
