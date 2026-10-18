@@ -623,7 +623,10 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    }
    $('regionSelect').addEventListener('change', () => updateProvinceOptions());
 
+   const SESSION_KEY = 'crp_admin_session_v1';
    let token = '';
+   try { token = sessionStorage.getItem(SESSION_KEY) || ''; } catch (_) {}
+
    let editing = '';
    let rows = [];
    let backgroundRefresh = false;
@@ -712,6 +715,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
          password: $('password').value
        });
        token = r.token;
+       try { sessionStorage.setItem(SESSION_KEY,token); } catch (_) {}
        $('password').value = '';$('loginView').classList.add('hidden');
        $('appView').classList.remove('hidden');$('loginMsg').textContent = '';
        tab('summary');
@@ -723,10 +727,30 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    $('logout').onclick = async () => {
      try { await api('logout'); } catch (_) {}
      token = '';
+     try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
      editing = '';
      $('appView').classList.add('hidden');
      $('loginView').classList.remove('hidden');$('loginMsg').textContent = 'ออกจากระบบแล้ว';
    };
+
+   async function restoreAdminSession() {
+     if (!token) return;
+     $('loginMsg').textContent = 'กำลังตรวจสอบเซสชันเดิม...';
+     try {
+       await api('getSummary');
+       $('loginView').classList.add('hidden');
+       $('appView').classList.remove('hidden');
+       $('loginMsg').textContent = '';
+       await tab('summary');
+     } catch (err) {
+       token = '';
+       try { sessionStorage.removeItem(SESSION_KEY); } catch (_) {}
+       $('appView').classList.add('hidden');
+       $('loginView').classList.remove('hidden');
+       $('loginMsg').textContent = 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง';
+     }
+   }
+   restoreAdminSession();
 
    async function loadSummary() {
      msg('กำลังโหลดสรุปผล...');
