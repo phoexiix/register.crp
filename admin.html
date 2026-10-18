@@ -29,7 +29,18 @@
    .danger { background: #fbe8e8; color: #a43333 }
    .search { display: flex; gap: 10px }
    .search input { flex: 1 }
-   .list { display: grid; gap: 10px }
+   .app-filter-form{display:grid;gap:14px;margin:14px 0 18px}
+   .app-filter-search{min-width:0}
+   .app-filter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+   .app-filter-form label{display:block;margin:0 0 6px;font-size:13px;font-weight:700;color:#435474}
+   .app-filter-actions{display:flex;flex-wrap:wrap;gap:10px}
+   @media(max-width:820px){.app-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+   @media(max-width:480px){.app-filter-grid{grid-template-columns:1fr}}
+   .list { display: grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap: 12px }
+    .list .item { min-width:0; overflow-wrap:anywhere; flex-direction:column; align-items:flex-start; justify-content:space-between }
+    .list .pill { white-space:normal }
+    @media(max-width:950px){.list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:480px){.list{grid-template-columns:1fr}}
    .item { width: 100%; display: flex; justify-content: space-between; gap: 10px; align-items: center; text-align: left; background: #fff; color: #20314b; border: 1px solid #e0e8f3; padding: 17px; border-radius: 13px }
    .item:hover { border-color: #8e8adf }
    .pill { font-size: 12px; background: #e8e9ff; color: #6254b8; border-radius: 20px; padding: 6px 10px; white-space: nowrap }
@@ -169,11 +180,22 @@
      <h2>
       รายชื่อผู้สมัคร
      </h2>
-     <form class="search" id="findForm">
-      <input id="find" placeholder="ค้นหาชื่อ หรือรหัสผู้สมัคร"/>
-      <button>
-       ค้นหา
-      </button>
+     <form id="findForm" class="app-filter-form">
+      <div class="app-filter-search">
+       <label for="find">ค้นหาชื่อ นามสกุล หรือรหัสผู้สมัคร</label>
+       <input id="find" autocomplete="off" placeholder="พิมพ์ชื่อ นามสกุล หรือรหัสผู้สมัคร"/>
+      </div>
+      <div class="app-filter-grid">
+       <div><label for="filterRegion">ภูมิภาค</label><select id="filterRegion"><option value="">ทุกภูมิภาค</option></select></div>
+       <div><label for="filterProvince">จังหวัด</label><select id="filterProvince"><option value="">ทุกจังหวัด</option></select></div>
+       <div><label for="filterNationality">สัญชาติ</label><select id="filterNationality"><option value="">ทุกสัญชาติ</option></select></div>
+       <div><label for="filterEducation">ระดับการศึกษา</label><select id="filterEducation"><option value="">ทุกระดับการศึกษา</option></select></div>
+       <div><label for="filterStatus">สถานะผู้สมัคร</label><select id="filterStatus"><option value="">ทุกสถานะ</option></select></div>
+      </div>
+      <div class="app-filter-actions">
+       <button type="submit">ค้นหา</button>
+       <button type="button" class="ghost" id="clearFilters">ล้างตัวกรอง</button>
+      </div>
      </form>
      <p class="muted" id="count">
      </p>
@@ -423,12 +445,12 @@
  window.addEventListener('message', event => {
    if (!trustedBridgeOrigin(event.origin) || !event.data || typeof event.data !== 'object') return;
    if (event.data.crp === 'ready') {
-     if (!bridgeFrame.isConnected || event.source === window) return;
+     if (!bridgeFrame.isConnected || event.source !== bridgeFrame.contentWindow) return;
      bridgeWindow = event.source; bridgeOrigin = event.origin; bridgeReady = true;
      readyWaiters.splice(0).forEach(fn => fn()); return;
    }
    if (event.data.crp === 'response') {
-     if (!bridgeReady || event.source !== bridgeWindow || event.origin !== bridgeOrigin) return;
+     if (!bridgeReady || event.source !== bridgeFrame.contentWindow || event.origin !== bridgeOrigin) return;
      const item = pending.get(event.data.id); if (!item) return;
      pending.delete(event.data.id); clearTimeout(item.timer);
      event.data.ok ? item.resolve(event.data.data) : item.reject(new Error(event.data.message || 'เกิดข้อผิดพลาด'));
@@ -442,14 +464,14 @@
        const index = readyWaiters.indexOf(onReady);
        if (index !== -1) readyWaiters.splice(index,1);
        reject(new Error('เชื่อมต่อ Apps Script ไม่สำเร็จ: ตรวจสอบ Web App Deploy, CRP_GITHUB_ORIGIN และการอนุญาต iframe'));
-     }, 30000);
+     }, 45000);
      readyWaiters.push(onReady); if (bridgeReady) onReady();
    });
    return new Promise((resolve,reject) => {
-     const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
-     const timer = setTimeout(() => { pending.delete(id); reject(new Error('เซิร์ฟเวอร์ตอบกลับช้าเกินไป')); }, 45000);
+     const id = (globalThis.crypto && typeof crypto.randomUUID === 'function') ? crypto.randomUUID() : String(Date.now()) + Math.random();
+     const timer = setTimeout(() => { pending.delete(id); reject(new Error('ไม่พบการตอบกลับจาก Apps Script ภายใน 90 วินาที โปรดตรวจสอบการอนุญาต iframe บนอุปกรณ์นี้และสถานะการ Deploy')); }, 90000);
      pending.set(id,{resolve,reject,timer});
-     bridgeWindow.postMessage({crp:'request',id,action,payload},bridgeOrigin);
+     try { bridgeWindow.postMessage({crp:'request',id,action,payload},bridgeOrigin); } catch(error) { clearTimeout(timer); pending.delete(id); reject(error); }
    });
  }
 const CRP_API = { call: callServer };
@@ -612,19 +634,83 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      return { total, items };
    }
 
+   // เก็บรายการจากเซิร์ฟเวอร์ทั้งหมดไว้กรองร่วมกันบนหน้ารายชื่อ
+   // ทำให้เลือกหลายเงื่อนไขได้โดยไม่ต้องเปลี่ยนฟังก์ชัน getApplications ของ Apps Script
+   let listRequestSequence = 0;
+   const FILTERS = [
+     ['filterRegion', 'Region'], ['filterProvince', 'Province'],
+     ['filterNationality', 'Nationality'], ['filterEducation', 'Education']
+   ];
+   const normalized = value => String(value ?? '').trim().toLocaleLowerCase('th');
+
+   function fillFilterOptions(id, values, defaultText) {
+     const select = $(id);
+     const previous = select.value;
+     const unique = [...new Set(values.map(value => String(value ?? '').trim()).filter(Boolean))]
+       .sort((a, b) => a.localeCompare(b, 'th'));
+     select.replaceChildren(new Option(defaultText, ''), ...unique.map(value => new Option(value, value)));
+     select.value = unique.includes(previous) ? previous : '';
+   }
+
+   function refreshProvinceFilter() {
+     const region = $('filterRegion').value;
+     fillFilterOptions('filterProvince', rows
+       .filter(r => !region || normalized(r.Region) === normalized(region))
+       .map(r => r.Province), 'ทุกจังหวัด');
+   }
+
+   function initListFilters() {
+     for (const [id, field] of FILTERS) {
+       if (id === 'filterProvince') continue;
+       const labels = {filterRegion:'ทุกภูมิภาค',filterNationality:'ทุกสัญชาติ',filterEducation:'ทุกระดับการศึกษา'};
+       fillFilterOptions(id, rows.map(r => r[field]), labels[id]);
+     }
+     fillFilterOptions('filterStatus', rows.map(stageOf), 'ทุกสถานะ');
+     refreshProvinceFilter();
+   }
+
+   function applyListFilters() {
+     const q = normalized($('find').value);
+     const selections = FILTERS.map(([id, field]) => [normalized($(id).value), field]);
+     const stage = normalized($('filterStatus').value);
+     const filtered = rows.filter(record => {
+       const displayName = [record.Prefix, record.FirstName, record.LastName].filter(Boolean).join(' ');
+       const searchable = normalized([displayName, record.FirstName, record.LastName, record.ApplicationID].join(' '));
+       if (q && !searchable.includes(q)) return false;
+       if (selections.some(([selected, field]) => selected && normalized(record[field]) !== selected)) return false;
+       return !stage || normalized(stageOf(record)) === stage;
+     });
+     $('count').textContent = `พบ ${filtered.length} จากทั้งหมด ${rows.length} รายการ`;
+     $('appList').replaceChildren(...filtered.map(record => itemButton(record, 'detail')));
+     if (!filtered.length) $('appList').innerHTML = '<p class="muted">ไม่พบรายชื่อผู้สมัครที่ตรงกับเงื่อนไข</p>';
+   }
+
    async function loadList() {
+     const current = ++listRequestSequence;
      msg('กำลังโหลดรายชื่อ...');
      try {
-       const result = await fetchAllApplications({ query: $('find').value.trim() });
-       rows = result.items;
-       $('count').textContent = `พบ ${result.total} รายการ`;
-       $('appList').replaceChildren(...rows.map(record => itemButton(record, 'detail')));
-       if (!rows.length) $('appList').innerHTML = '<p class="muted">ไม่พบรายชื่อผู้สมัคร</p>';
+       const result = await fetchAllApplications();
+       if (current !== listRequestSequence) return;
+       rows = result.items || [];
+       initListFilters();
+       applyListFilters();
        msg('');
      } catch (error) {
-       msg('โหลดรายชื่อไม่สำเร็จ: ' + error.message);
+       if (current === listRequestSequence) msg('โหลดรายชื่อไม่สำเร็จ: ' + error.message);
      }
    }
+
+   $('filterRegion').addEventListener('change', () => { refreshProvinceFilter(); applyListFilters(); });
+   ['filterProvince', 'filterNationality', 'filterEducation', 'filterStatus'].forEach(id =>
+     $(id).addEventListener('change', applyListFilters));
+   $('find').addEventListener('input', applyListFilters);
+   $('clearFilters').addEventListener('click', () => {
+     $('find').value = '';
+     for (const [id] of FILTERS) $(id).value = '';
+     $('filterStatus').value = '';
+     refreshProvinceFilter();
+     applyListFilters();
+   });
 
    async function loadReview() {
      msg('กำลังโหลดรายการตรวจสอบ...');
@@ -663,7 +749,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      } catch (err) { msg(err.message); }
    }
 
-   $('findForm').onsubmit = e => { e.preventDefault(); loadList(); };$('approvalFindForm').onsubmit = e => { e.preventDefault(); loadApproval(); };
+   $('findForm').onsubmit = e => { e.preventDefault(); applyListFilters(); };$('approvalFindForm').onsubmit = e => { e.preventDefault(); loadApproval(); };
 
    function parseReview(record) {
      try { return JSON.parse(record.ReviewData || '{}') || {}; }
