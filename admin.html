@@ -1152,9 +1152,10 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      $('modalTitle').textContent = 'เลือกกลุ่มฝึก';
      $('modalBody').innerHTML = `<p class="muted">ผู้สมัครได้รับอนุมัติแล้ว กรุณาเลือกกลุ่มฝึกสำหรับขั้นตอนถัดไป</p>
        <p><strong>รหัสผู้สมัคร: ${esc(applicationId)}</strong></p>
+       ${currentGroup && !['1/1','1/2','2/1','2/2','3/1','3/2','4/1','4/2'].includes(currentGroup) ? `<p class="muted">กลุ่มเดิม: ${esc(currentGroup)} — กรุณาเลือกกลุ่มย่อยใหม่</p>` : ''}
        <div class="card"><label for="trainingGroupSelect">กลุ่มฝึก *</label>
        <select id="trainingGroupSelect"><option value="">-- เลือกกลุ่มฝึก --</option>
-       ${['กลุ่มที่ 1','กลุ่มที่ 2','กลุ่มที่ 3','กลุ่มที่ 4'].map(g=>`<option value="${g}" ${g===currentGroup?'selected':''}>${g}</option>`).join('')}
+       ${['1/1','1/2','2/1','2/2','3/1','3/2','4/1','4/2'].map(g=>`<option value="${g}" ${g===currentGroup?'selected':''}>${g}</option>`).join('')}
        </select><p class="muted">สามารถเปลี่ยนกลุ่มได้ภายหลังในเมนูการตรวจร่างกาย</p>
        <button type="button" class="orange" id="saveTrainingGroup">บันทึกกลุ่มฝึก</button></div>`;
      $('saveTrainingGroup').onclick = async () => {
