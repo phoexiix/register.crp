@@ -72,7 +72,7 @@
    .stat { border-radius: 15px; background: #f0f5ff; padding: 20px }
    .stat strong { display: block; font-size: 30px; color: #544db0 }
    /* Navigation: exactly two balanced rows of four buttons */
-   .tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-items: stretch }
+   .tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: stretch }
    .tabs button { width: 100%; min-width: 0; min-height: 68px; padding: 12px 8px; display: flex; align-items: center; justify-content: center; text-align: center; white-space: normal; overflow-wrap: anywhere; line-height: 1.35 }
    @media (max-width: 600px) { .tabs { gap: 6px } .tabs button { font-size: 12px; min-height: 84px; padding: 8px 3px; line-height: 1.3 } }
    @media (max-width: 390px) { .tabs button { font-size: 11px; min-height: 92px; padding: 7px 2px } }
@@ -158,7 +158,7 @@ button, .btn { font-size: 17px; line-height: 1.45; }
 .pill[data-status="ผ่านการคัดเลือกเข้ารับการฝึก"]{background:#d9f6e6;color:#126c43;border:1px solid #8ad4a8}
 .pill[data-status="ไม่ผ่านการตรวจร่างกาย"]{background:#ffe1e1;color:#a52332;border:1px solid #f2aab0}
 
-/* Keep all eight navigation buttons in a 4 x 2 layout at every screen size. */
+/* Nine navigation buttons in a balanced 3 x 3 layout. */
 @media (max-width: 600px) { .tabs button { font-size: 12px; } }
 @media (max-width: 390px) { .tabs button { font-size: 11px; } }
 
@@ -281,6 +281,7 @@ button, .btn { font-size: 17px; line-height: 1.45; }
       </button>
       <button data-tab="medical">การตรวจร่างกาย</button>
       <button data-tab="training">ผู้ผ่านการคัดเลือกเข้ารับการฝึก</button>
+      <button data-tab="rejected">ผู้ที่ไม่ได้รับคัดเลือก</button>
      </div>
      <p class="message" id="appMsg">
      </p>
@@ -542,6 +543,12 @@ button, .btn { font-size: 17px; line-height: 1.45; }
       <div class="medical-group-menu" id="medicalGroupMenu" aria-label="เลือกกลุ่มตรวจร่างกาย"></div>
       <div class="medical-group-heading" id="medicalGroupHeading" aria-live="polite"></div>
       <div class="list" id="medicalList"></div>
+    </section>
+    <section class="card hidden" id="tab-rejected">
+      <h2>รายชื่อผู้ที่ไม่ได้รับคัดเลือก</h2>
+      <p class="muted">แสดงผู้สมัครที่มีผลไม่ผ่านการคัดเลือก รวมถึงผู้ที่ไม่ผ่านคุณสมบัติหรือไม่ผ่านการตรวจร่างกาย</p>
+      <p class="muted" id="rejectedCount"></p>
+      <div class="list" id="rejectedList"></div>
     </section>
     <section class="card hidden" id="tab-training">
       <h2>รายชื่อผู้ผ่านการคัดเลือกเข้ารับการฝึก</h2>
@@ -830,6 +837,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      if (name === 'approval') await loadApproval();
      if (name === 'medical') await loadMedical();
      if (name === 'training') await loadTraining();
+     if (name === 'rejected') await loadRejected();
    }
    async function refreshCurrentTab() {
      const active = document.querySelector('[data-tab].active');
@@ -841,6 +849,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      else if (name === 'approval') await loadApproval();
      else if (name === 'medical') await loadMedical();
      else if (name === 'training') await loadTraining();
+     else if (name === 'rejected') await loadRejected();
    }
    // Live updates via background polling: no page reload, no menu change.
    // Apps Script does not provide a push stream; check every 5 seconds.
@@ -850,7 +859,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
          !$('overlay').classList.contains('hidden')) return;
      const active = document.querySelector('[data-tab].active');
      const name = active?.dataset.tab;
-     if (!['summary','applications','review','reviewFailed','approval','medical','training'].includes(name)) return;
+     if (!['summary','applications','review','reviewFailed','approval','medical','training','rejected'].includes(name)) return;
      liveBusy = true;
      backgroundRefresh = true;
      try { await refreshCurrentTab(); }
@@ -1288,6 +1297,21 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        renderMedicalGroupButtons(items);
        renderMedicalGroupMembers(items);
      } catch(e) { msg(e.message); }
+   }
+   const REJECTED_STATUSES = new Set([
+     'ไม่ผ่านการคัดเลือก',
+     'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)',
+     'ไม่ผ่านการตรวจร่างกาย'
+   ]);
+   async function loadRejected() {
+     try {
+       const result = await fetchAllApplications();
+       const items = (result.items || []).filter(record => REJECTED_STATUSES.has(record.Status));
+       $('rejectedCount').textContent = `ผู้ที่ไม่ได้รับคัดเลือก ${items.length} คน`;
+       const list = $('rejectedList');
+       list.replaceChildren(...items.map(record => managementItem(record, 'detail')));
+       if (!items.length) list.innerHTML = '<p class="muted">ยังไม่มีรายชื่อผู้ที่ไม่ได้รับคัดเลือก</p>';
+     } catch (error) { msg('โหลดรายชื่อผู้ที่ไม่ได้รับคัดเลือกไม่สำเร็จ: ' + error.message); }
    }
    async function loadTraining() {
      try {
