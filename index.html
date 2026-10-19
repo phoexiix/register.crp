@@ -51,7 +51,39 @@ button, .btn { font-size: 17px; line-height: 1.45; }
 nav>div{display:flex;flex-wrap:wrap;gap:8px}
 @media(max-width:680px){.public-tab{flex:1 1 calc(50% - 8px);font-size:15px;padding:10px 7px}nav>div{width:100%}}
 .public-stats{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin-top:16px}.public-stat{grid-column:span 4}.public-stat:nth-child(n+4){grid-column:span 3}.public-stat{border:1px solid #dce7f6;border-radius:14px;background:#f6f9ff;padding:18px;display:flex;flex-direction:column;gap:4px}.public-stat span{font-weight:650;color:#405777}.public-stat strong{font-size:clamp(30px,3vw,42px);line-height:1.15;color:#3158ad;font-variant-numeric:tabular-nums}.public-stat small{color:#64748b}.public-stat:nth-child(6) strong{color:#14804e}.public-stat:nth-child(7) strong{color:#b63d4c}@media(max-width:700px){.public-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.public-stat,.public-stat:nth-child(n+4){grid-column:span 1}.public-stat{padding:13px}.public-stat span{font-size:14px}}@media(min-width:701px) and (max-width:880px){.public-stats{gap:9px}.public-stat{padding:12px}.public-stat span{font-size:14px}.public-stat strong{font-size:clamp(26px,3vw,36px)}}
-</style></head><body><header><nav><a class="brand" href="./index.html"><img src="https://i.postimg.cc/qMDpFg75/albatross.png" alt="CRP Logo" class="brand-logo">CRP <b>RECRUITMENT</b></a><div style="display:flex;flex-wrap:wrap;gap:14px"><button type="button" class="public-tab" data-public-tab="processSection">ขั้นตอนคัดเลือก</button><button type="button" class="public-tab" data-public-tab="applicantsSection">รายชื่อผู้สมัคร</button><button type="button" class="public-tab" data-public-tab="medicalSection">การตรวจร่างกาย</button><button type="button" class="public-tab" data-public-tab="trainingSection">ผู้ผ่านเข้าฝึก</button><a class="navlink" href="./admin.html">สำหรับเจ้าหน้าที่ ↗</a></div></nav></header><main><section class="hero" id="publicHero"><span class="pill">Civilian Recruitment & Preparation</span><h1>โครงการคัดเลือกและเตรียมกำลังพล<br>สำหรับบุคคลทั่วไป</h1><p class="muted">ตรวจสอบข้อมูลการลงทะเบียนและผลการพิจารณาของผู้สมัคร</p></section><section class="card" id="publicSummarySection" aria-label="สถิติผู้สมัคร"><h2>สรุปจำนวนผู้สมัคร</h2><div class="public-stats" id="publicStats"><div class="public-stat"><span>สมัครทั้งหมด</span><strong id="countTotal">—</strong><small>คน</small></div><div class="public-stat"><span>รอตรวจสอบ</span><strong id="countPendingReview">—</strong><small>คน</small></div><div class="public-stat"><span>ไม่ผ่านการตรวจสอบ</span><strong id="countFailedReview">—</strong><small>คน</small></div><div class="public-stat"><span>รออนุมัติ</span><strong id="countPendingApproval">—</strong><small>คน</small></div><div class="public-stat"><span>รอตรวจร่างกาย</span><strong id="countPendingMedical">—</strong><small>คน</small></div><div class="public-stat"><span>ผ่านการคัดเลือก</span><strong id="countSelected">—</strong><small>คน</small></div><div class="public-stat"><span>ไม่ผ่านการคัดเลือก</span><strong id="countNotSelected">—</strong><small>คน</small></div></div><p class="muted" id="publicSummaryMessage" aria-live="polite">กำลังนับจำนวนผู้สมัครจากข้อมูลในระบบ...</p></section><section class="card" id="processSection"><h2>ขั้นตอนการคัดเลือก</h2><div class="process-steps"><div>1. ลงทะเบียนสมัคร</div><div>2. ตรวจสอบคุณสมบัติ</div><div>3. พิจารณาอนุมัติ</div><div>4. เลือกกลุ่มฝึก</div><div>5. ตรวจร่างกาย</div><div>6. ผ่านการคัดเลือกเข้ารับการฝึก</div></div><p class="muted">ตรวจสอบสถานะปัจจุบันของแต่ละคนได้ในรายการผู้สมัครด้านล่าง</p></section>
+</style>
+<style id="crp-responsive-fix">
+html,body{max-width:100%;overflow-x:hidden}
+main,header,nav,.card,.hero,.modal{min-width:0}
+img,video,canvas,svg{max-width:100%;height:auto}
+input,select,textarea,button{max-width:100%}
+input,select,textarea{min-width:0}
+.card,.hero,.modal,.item{overflow-wrap:anywhere}
+.overlay,.crp-notice-layer{height:100dvh;overflow-y:auto;overscroll-behavior:contain}
+.modal{max-height:calc(100dvh - 30px);overscroll-behavior:contain}
+@media(max-width:760px){
+ header{padding:14px 16px}nav{flex-wrap:wrap;gap:12px}
+ main{padding:0 14px;margin:18px auto}
+ .card{padding:16px;border-radius:14px}.hero{padding:22px}
+ .grid,.app-filter-grid,.review-applicant-grid{grid-template-columns:1fr}
+ .stats,.public-stats{gap:10px}
+ .modaltop{align-items:flex-start;flex-wrap:wrap}
+ .modal{padding:16px}
+ .medical-group-menu{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .tabs button{min-height:54px;font-size:14px;padding:10px 7px}
+ table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+ button,.btn{min-height:44px}
+}
+@media(max-width:420px){
+ .list{grid-template-columns:1fr}
+ .public-stats{grid-template-columns:1fr 1fr}
+ .brand{font-size:17px}.brand-logo{width:34px;height:34px}
+ .search{flex-direction:column}
+ .decision-result-buttons,.review-choice-group{grid-template-columns:1fr}
+}
+</style>
+</head><body><header><nav><a class="brand" href="./index.html"><img src="https://i.postimg.cc/qMDpFg75/albatross.png" alt="CRP Logo" class="brand-logo">CRP <b>RECRUITMENT</b></a><div style="display:flex;flex-wrap:wrap;gap:14px"><button type="button" class="public-tab" data-public-tab="processSection">ขั้นตอนคัดเลือก</button><button type="button" class="public-tab" data-public-tab="applicantsSection">รายชื่อผู้สมัคร</button><button type="button" class="public-tab" data-public-tab="medicalSection">การตรวจร่างกาย</button><button type="button" class="public-tab" data-public-tab="trainingSection">ผู้ผ่านเข้าฝึก</button><a class="navlink" href="./admin.html">สำหรับเจ้าหน้าที่ ↗</a></div></nav></header><main><section class="hero" id="publicHero"><span class="pill">Civilian Recruitment & Preparation</span><h1>โครงการคัดเลือกและเตรียมกำลังพล<br>สำหรับบุคคลทั่วไป</h1><p class="muted">ตรวจสอบข้อมูลการลงทะเบียนและผลการพิจารณาของผู้สมัคร</p></section><section class="card" id="publicSummarySection" aria-label="สถิติผู้สมัคร"><h2>สรุปจำนวนผู้สมัคร</h2><div class="public-stats" id="publicStats"><div class="public-stat"><span>สมัครทั้งหมด</span><strong id="countTotal">—</strong><small>คน</small></div><div class="public-stat"><span>รอตรวจสอบ</span><strong id="countPendingReview">—</strong><small>คน</small></div><div class="public-stat"><span>ไม่ผ่านการตรวจสอบ</span><strong id="countFailedReview">—</strong><small>คน</small></div><div class="public-stat"><span>รออนุมัติ</span><strong id="countPendingApproval">—</strong><small>คน</small></div><div class="public-stat"><span>รอตรวจร่างกาย</span><strong id="countPendingMedical">—</strong><small>คน</small></div><div class="public-stat"><span>ผ่านการคัดเลือก</span><strong id="countSelected">—</strong><small>คน</small></div><div class="public-stat"><span>ไม่ผ่านการคัดเลือก</span><strong id="countNotSelected">—</strong><small>คน</small></div></div><p class="muted" id="publicSummaryMessage" aria-live="polite">กำลังนับจำนวนผู้สมัครจากข้อมูลในระบบ...</p></section><section class="card" id="processSection"><h2>ขั้นตอนการคัดเลือก</h2><div class="process-steps"><div>1. ลงทะเบียนสมัคร</div><div>2. ตรวจสอบคุณสมบัติ</div><div>3. พิจารณาอนุมัติ</div><div>4. เลือกกลุ่มฝึก</div><div>5. ตรวจร่างกาย</div><div>6. ผ่านการคัดเลือกเข้ารับการฝึก</div></div><p class="muted">ตรวจสอบสถานะปัจจุบันของแต่ละคนได้ในรายการผู้สมัครด้านล่าง</p></section>
 <section class="card hidden" id="medicalSection"><h2>การตรวจร่างกาย</h2><p class="muted">ผู้ที่ได้รับอนุมัติจะเข้าสู่ขั้นตอนตรวจร่างกาย โดยใช้เกณฑ์ของโครงการผ่านอย่างน้อย 7 จาก 10 หัวข้อ (70%) ทั้งนี้ผู้ประเมินทางการแพทย์ต้องยืนยันความพร้อมและความปลอดภัยในการฝึก</p><ol class="medical-list"><li>ซักประวัติสุขภาพและประเมินความพร้อม</li><li>ตรวจร่างกายทั่วไปโดยแพทย์</li><li>ความดันโลหิตและชีพจร</li><li>การมองเห็น</li><li>การได้ยิน</li><li>หัวใจและหลอดเลือด</li><li>ระบบทางเดินหายใจ</li><li>กล้ามเนื้อ กระดูก ข้อต่อ และการเคลื่อนไหว</li><li>ระบบประสาทและการทรงตัว</li><li>ความสามารถในการออกแรงตามความเหมาะสม</li></ol></section>
 <section class="card hidden" id="trainingSection"><h2>รายชื่อผู้ผ่านการคัดเลือกเข้ารับการฝึก</h2><p class="muted">ผู้ที่ผ่านขั้นตอนอนุมัติและตรวจร่างกายอย่างน้อย 70%</p><form class="search" id="trainingSearchForm"><input id="trainingQuery" placeholder="ค้นหารายชื่อผู้ผ่านการคัดเลือกเข้าฝึก"><button>ค้นหา</button></form><p class="message" id="trainingMsg"></p><div class="training-filter"><label for="groupFilter">กรองตามกลุ่มฝึก</label><select id="groupFilter"><option value="">ทุกกลุ่ม</option><option value="1/1">กลุ่ม 1/1</option><option value="1/2">กลุ่ม 1/2</option><option value="2/1">กลุ่ม 2/1</option><option value="2/2">กลุ่ม 2/2</option><option value="3/1">กลุ่ม 3/1</option><option value="3/2">กลุ่ม 3/2</option><option value="4/1">กลุ่ม 4/1</option><option value="4/2">กลุ่ม 4/2</option></select></div><div class="list" id="trainingResults"></div></section><section class="card hidden" id="applicantsSection"><h2>ค้นหาข้อมูลผู้สมัคร</h2><p class="muted">รายชื่อผู้สมัครทั้งหมด สามารถค้นหาด้วยชื่อ นามสกุล หรือรหัสผู้สมัคร</p><form class="search" id="searchForm"><input autocomplete="off" id="query" placeholder="ค้นหาชื่อ นามสกุล หรือรหัสผู้สมัคร"><button>ค้นหา</button></form><p class="message" id="msg"></p><div class="list" id="results"></div></section></main><div class="overlay hidden" id="overlay"><div class="modal"><div class="modaltop"><h2>รายละเอียดผู้สมัคร</h2><button class="ghost" id="close">ปิด ✕</button></div><div id="details"></div></div></div><footer>CRP — Recruitment & Preparation</footer><script>
 const PUBLIC_SECTIONS=['processSection','applicantsSection','medicalSection','trainingSection'];
@@ -113,8 +145,15 @@ window.addEventListener('message',event=>{
     data.ok ? item.resolve(data.data) : item.reject(new Error(data.message||'เกิดข้อผิดพลาด'));
   }
 });
-document.body.appendChild(bridgeFrame);
+if (!(window.google && google.script && google.script.run)) document.body.appendChild(bridgeFrame);
 async function callServer(action,payload={}) {
+  if (window.google && google.script && google.script.run) {
+    return new Promise((resolve,reject) => {
+      google.script.run.withSuccessHandler(resolve).withFailureHandler(error =>
+        reject(new Error(error && error.message ? error.message : String(error))))
+        .apiRequest(action,payload);
+    });
+  }
   if(!bridgeReady) await new Promise((resolve,reject)=>{
     let finished=false;
     const onReady=()=>{ if(finished)return; finished=true;clearTimeout(timer);resolve(); };
@@ -240,4 +279,11 @@ setInterval(() => {search(true);loadTraining(true);loadPublicSummary(true)}, 500
 document.addEventListener('visibilitychange', () => { if (!document.hidden) {search(true);loadTraining(true);loadPublicSummary(true)} });
 async function show(id){$('overlay').classList.remove('hidden');$('details').textContent='กำลังโหลด...';try{const x=await CRP_API.call('publicDetails',{applicationId:id});$('details').innerHTML=`<dl><dt>รหัสผู้สมัคร</dt><dd>${esc(x.applicationId)}</dd><dt>ชื่อ-นามสกุล</dt><dd>${esc(x.fullName)}</dd><dt>จังหวัด</dt><dd>${esc(x.province||'-')}</dd><dt>ระดับการศึกษา</dt><dd>${esc(x.education||'-')}</dd><dt>การลงทะเบียน</dt><dd>${esc(x.registration)}</dd><dt>ขั้นตอนตรวจร่างกาย</dt><dd>${esc(x.medicalStatus||'ยังไม่ถึงขั้นตอน')}</dd><dt>กลุ่มฝึก</dt><dd>${esc(x.trainingGroup||'ยังไม่ได้จัดกลุ่ม')}</dd><dt>ผลการพิจารณา</dt><dd><span class="pill" data-status="${esc(x.status)}">${esc(x.status)}</span></dd></dl>`;}catch(e){$('details').textContent=e.message;}}
 $('searchForm').onsubmit=e=>{e.preventDefault();search();};$('close').onclick=()=>$('overlay').classList.add('hidden');$('overlay').onclick=e=>{if(e.target===$('overlay'))$('close').click();};search();loadTraining();loadPublicSummary();
-</script></body></html>
+</script>
+<script>
+if (window.google && google.script && google.script.run) {
+  document.querySelectorAll('a[href="./index.html"]').forEach(a=>a.href='?page=public');
+  document.querySelectorAll('a[href="./admin.html"]').forEach(a=>a.href='?page=admin');
+}
+</script>
+</body></html>
