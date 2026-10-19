@@ -33,6 +33,13 @@
    .approval-failed-list{margin:0;padding-left:24px;display:grid;gap:9px}
    .approval-failed-list li{font-weight:700;font-size:17px;line-height:1.5;padding-left:3px;overflow-wrap:anywhere}
    .approval-failed-note{font-size:15px;color:#80535b;margin:7px 0 0}
+   .decision-result-title { display:block; font-size:17px; font-weight:750; margin-bottom:10px }
+   .decision-result-buttons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:16px }
+   .decision-result-button { display:flex; justify-content:center; align-items:center; min-height:60px; padding:13px 16px; border:2px solid #d1def0; border-radius:13px; background:#f4f7ff; color:#304f85; font-weight:750; text-align:center; line-height:1.4 }
+   .decision-result-button[data-result-kind="approve"][aria-pressed="true"] { border-color:#21955a; background:#def6e8; color:#17663e; box-shadow:0 0 0 2px #21955a22 }
+   .decision-result-button[data-result-kind="reject"][aria-pressed="true"] { border-color:#ce4c58; background:#ffe9eb; color:#922c36; box-shadow:0 0 0 2px #ce4c5822 }
+   .decision-result-button:focus-visible { outline:3px solid #6c8bd5; outline-offset:3px }
+   @media(max-width:580px){.decision-result-buttons{grid-template-columns:1fr}}
    .decision-quick-reasons { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: -3px 0 20px }
    .decision-quick-title { width: 100%; color: #52637d; font-size: 14px; font-weight: 700 }
    .decision-quick-button { padding: 10px 15px; border: 1px solid #cdd9f5; }
@@ -1336,7 +1343,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      quickMedical.setAttribute('role','group');
      quickMedical.setAttribute('aria-label','ข้อความผลตรวจร่างกายสำเร็จรูป');
      quickMedical.innerHTML='<span class="decision-quick-title">ข้อความสำเร็จรูป (กดได้หลายข้อความ ระบบจะเพิ่มต่อท้าย)</span>'
-       + ['ผ่านการตรวจสอบ','ไม่ผ่านการตรวจสอบ','ไม่ระบุ'].map(text=>`<button type="button" class="ghost decision-quick-button" data-medical-reason="${text}">${text}</button>`).join('');
+       + ['ผ่านการตรวจสอบ','ไม่ผ่านการตรวจสอบ','ไม่เข้ารับการตรวจร่างกาย','ไม่ระบุ'].map(text=>`<button type="button" class="ghost decision-quick-button" data-medical-reason="${text}">${text}</button>`).join('');
      quickMedical.querySelectorAll('[data-medical-reason]').forEach(btn=>{
        btn.onclick=()=>appendQuickText(note,btn.dataset.medicalReason);
      });
@@ -1419,20 +1426,28 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
          : '<p class="approval-failed-note">ไม่พบรายละเอียดหัวข้อที่ระบุว่า “ไม่ผ่าน” ในผลการตรวจสอบที่บันทึกไว้ กรุณาตรวจสอบข้อมูลก่อนพิจารณาอนุมัติ</p>'}
      </div>`;
      const options = isFailed
-       ? `<option value="ผ่านการคัดเลือก (กรณีพิเศษ)">อนุมัติ — ผ่านการคัดเลือก (กรณีพิเศษ)</option>
-          <option value="ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)">ไม่อนุมัติ — ไม่ผ่านคุณสมบัติ</option>`
-       : `<option value="ผ่านการคัดเลือก">ผ่านการสมัคร</option>
-          <option value="ไม่ผ่านการคัดเลือก">ไม่ผ่านการสมัคร</option>`;
+       ? [
+           { value: 'ผ่านการคัดเลือก (กรณีพิเศษ)', label: 'อนุมัติ — ผ่านการคัดเลือก (กรณีพิเศษ)', kind: 'approve' },
+           { value: 'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)', label: 'ไม่อนุมัติ — ไม่ผ่านคุณสมบัติ', kind: 'reject' }
+         ]
+       : [
+           { value: 'ผ่านการคัดเลือก', label: 'ผ่านการสมัคร', kind: 'approve' },
+           { value: 'ไม่ผ่านการคัดเลือก', label: 'ไม่ผ่านการสมัคร', kind: 'reject' }
+         ];
      section.innerHTML = `<h3>${isFailed ? 'พิจารณาผู้สมัครไม่ผ่านคุณสมบัติ' : 'อนุมัติผลการสมัคร'}</h3>
        ${isFailed ? '<p class="muted">หากอนุมัติ ต้องบันทึกเหตุผลการยกเว้นเป็นกรณีพิเศษ หากไม่อนุมัติ ระบบจะบันทึกสาเหตุว่าไม่ผ่านคุณสมบัติ</p>' : ''}
        ${failedSummary}
-       <label for="decisionSelect">ผลการสมัคร</label>
-       <select id="decisionSelect"><option value="">เลือกผลการสมัคร</option>${options}</select>
+       <div class="decision-result-title" id="decisionResultLabel">ผลการสมัคร</div>
+       <input type="hidden" id="decisionSelect" value="">
+       <div class="decision-result-buttons" role="group" aria-labelledby="decisionResultLabel">
+         ${options.map(option => `<button type="button" class="decision-result-button" data-decision-status="${esc(option.value)}" data-result-kind="${option.kind}" aria-pressed="false">${esc(option.label)}</button>`).join('')}
+       </div>
        <p><label for="decisionReason" id="decisionReasonLabel">เหตุผลการพิจารณา *</label><textarea id="decisionReason" rows="4" maxlength="1900" placeholder="ระบุเหตุผล"></textarea></p>
        <div class="decision-quick-reasons" role="group" aria-label="ข้อความเหตุผลสำเร็จรูป">
          <span class="decision-quick-title">ข้อความสำเร็จรูป (กดได้หลายข้อความ ระบบจะเพิ่มต่อท้าย)</span>
          <button type="button" class="ghost decision-quick-button" data-decision-reason="ผ่านการตรวจสอบ">ผ่านการตรวจสอบ</button>
          <button type="button" class="ghost decision-quick-button" data-decision-reason="ไม่ผ่านการตรวจสอบ">ไม่ผ่านการตรวจสอบ</button>
+         <button type="button" class="ghost decision-quick-button" data-decision-reason="ไม่แก้ไขเอกสาร">ไม่แก้ไขเอกสาร</button>
          <button type="button" class="ghost decision-quick-button" data-decision-reason="อายุเกินกว่ากำหนด">อายุเกินกว่ากำหนด</button>
          <button type="button" class="ghost decision-quick-button" data-decision-reason="ไม่ผ่านการพิจารณา">ไม่ผ่านการพิจารณา</button>
          <button type="button" class="ghost decision-quick-button" data-decision-reason="ไม่ผ่านการพิจารณาจากสภาฟินิกซ์">ไม่ผ่านการพิจารณาจากสภาฟินิกซ์</button>
@@ -1444,6 +1459,15 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      const choice = $('decisionSelect');
      const notes = $('decisionReason');
      const noteLabel = $('decisionReasonLabel');
+     section.querySelectorAll('[data-decision-status]').forEach(button => {
+       button.addEventListener('click', () => {
+         choice.value = button.dataset.decisionStatus;
+         section.querySelectorAll('[data-decision-status]').forEach(item => {
+           item.setAttribute('aria-pressed', String(item === button));
+         });
+         choice.dispatchEvent(new Event('change'));
+       });
+     });
      section.querySelectorAll('[data-decision-reason]').forEach(button => {
        button.addEventListener('click', () => {
          appendQuickText(notes,button.dataset.decisionReason);
