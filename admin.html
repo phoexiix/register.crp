@@ -36,6 +36,10 @@
    .decision-quick-reasons { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: -3px 0 20px }
    .decision-quick-title { width: 100%; color: #52637d; font-size: 14px; font-weight: 700 }
    .decision-quick-button { padding: 10px 15px; border: 1px solid #cdd9f5; }
+   .medical-pass-all { display:flex;align-items:center;gap:11px;padding:13px 15px;margin:12px 0 18px;border:1px solid #cdd9f5;background:#f4f7ff;border-radius:12px;cursor:pointer;font-size:15px;color:#2f4e87; }
+   .medical-pass-all input[type="checkbox"] { width:20px;height:20px;margin:0;flex:none;accent-color:#3158ad;cursor:pointer; }
+   .medical-pass-all span { font-weight:750; }
+   .medical-quick-reasons { margin: 12px 0 14px; }
 
    .ghost { background: #e9efff; color: #4257a2 }
    .danger { background: #fbe8e8; color: #a43333 }
@@ -1286,11 +1290,38 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        if (!(r.items||[]).length) list.innerHTML='<p class="muted">ยังไม่มีผู้ผ่านการคัดเลือกเข้ารับการฝึก</p>';
      } catch(e) { msg(e.message); }
    }
+   // Append multiple quick phrases without overwriting the user's existing text.
+   function appendQuickText(field, phrase) {
+     const existing = field.value.trimEnd();
+     const combined = existing ? existing + '\n' + phrase : phrase;
+     if (field.maxLength >= 0 && combined.length > field.maxLength) {
+       crpNotice('ข้อความยาวเกินจำนวนตัวอักษรที่กำหนด');
+       return;
+     }
+     field.value = combined;
+     field.dispatchEvent(new Event('input', { bubbles: true }));
+     field.focus();
+     field.setSelectionRange(field.value.length, field.value.length);
+   }
    function renderMedical(record) {
      const section=document.createElement('section');
      section.className='card';
      let previous={}; try{previous=JSON.parse(record.MedicalData||'{}')}catch(e){}
      section.innerHTML='<h3>รายการตรวจร่างกาย 10 หัวข้อ</h3><p class="muted">เลือกผลทุกข้อโดยผู้ประเมินทางการแพทย์ คะแนนผ่านอย่างน้อย 7/10 (70%) ผลนี้เป็นเกณฑ์ของโครงการ ไม่ทดแทนการรับรองความปลอดภัยจากแพทย์</p>';
+     const passAllLabel=document.createElement('label');
+     passAllLabel.className='medical-pass-all';
+     passAllLabel.innerHTML='<input type="checkbox" id="medicalPassAll"><span>ผ่านทั้งหมด (10 หัวข้อ)</span>';
+     section.append(passAllLabel);
+     const passAllMedical=passAllLabel.querySelector('input');
+     passAllMedical.addEventListener('change',()=>{
+       MEDICAL_CHECKS.forEach((_,i)=>{
+         const radio=section.querySelector(`input[data-medical="${i}"][value="ผ่าน"]`);
+         if(!radio) return;
+         if(passAllMedical.checked) radio.checked=true;
+         else if(radio.checked) radio.checked=false;
+       });
+       section.dispatchEvent(new Event('change', { bubbles: false }));
+     });
      MEDICAL_CHECKS.forEach((name,i)=>{
        const row=document.createElement('div');row.className='review-row';
        row.innerHTML=`<span class="review-question">${i+1}. ${esc(name)}</span><div class="review-choice-group" role="radiogroup">${['ผ่าน','ไม่ผ่าน'].map(v=>`<label class="review-choice ${v==='ผ่าน'?'review-choice--pass':'review-choice--fail'}"><input type="radio" name="medicalCheck${i}" data-medical="${i}" value="${v}" ${previous[name]===v?'checked':''}><span>${v==='ผ่าน'?'✓ ผ่าน':'✕ ไม่ผ่าน'}</span></label>`).join('')}</div>`;
@@ -1300,8 +1331,17 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      note.rows=3;note.placeholder='ชื่อผู้ประเมิน วันตรวจ และข้อสังเกตที่จำเป็น';
      note.value=record.MedicalNote||'';
      const label=document.createElement('label');label.textContent='ผู้ประเมินและรายละเอียดการตรวจ *';
+     const quickMedical=document.createElement('div');
+     quickMedical.className='decision-quick-reasons medical-quick-reasons';
+     quickMedical.setAttribute('role','group');
+     quickMedical.setAttribute('aria-label','ข้อความผลตรวจร่างกายสำเร็จรูป');
+     quickMedical.innerHTML='<span class="decision-quick-title">ข้อความสำเร็จรูป (กดได้หลายข้อความ ระบบจะเพิ่มต่อท้าย)</span>'
+       + ['ผ่านการตรวจสอบ','ไม่ผ่านการตรวจสอบ','ไม่ระบุ'].map(text=>`<button type="button" class="ghost decision-quick-button" data-medical-reason="${text}">${text}</button>`).join('');
+     quickMedical.querySelectorAll('[data-medical-reason]').forEach(btn=>{
+       btn.onclick=()=>appendQuickText(note,btn.dataset.medicalReason);
+     });
      const score=document.createElement('p');score.className='muted';
-     const calculate=()=>{let count=0,answered=0;MEDICAL_CHECKS.forEach((_,i)=>{const v=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(v){answered++;if(v==='ผ่าน')count++;}});score.textContent=`ผ่าน ${count}/10 (${count*10}%) — ตอบแล้ว ${answered}/10 ข้อ`;};
+     const calculate=()=>{let count=0,answered=0;MEDICAL_CHECKS.forEach((_,i)=>{const v=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(v){answered++;if(v==='ผ่าน')count++;}});score.textContent=`ผ่าน ${count}/10 (${count*10}%) — ตอบแล้ว ${answered}/10 ข้อ`;passAllMedical.checked=count===MEDICAL_CHECKS.length;};
      section.addEventListener('change',calculate);
      const button=document.createElement('button');button.type='button';button.className='orange';button.textContent='บันทึกผลตรวจร่างกาย';
      button.onclick=async()=>{
@@ -1316,7 +1356,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
          msg(`บันทึกผลตรวจร่างกาย ${result.percent}% — ${result.status}`);
        }catch(e){/* api() แสดง popup ข้อผิดพลาดแล้ว */}finally{button.disabled=false}
      };
-     section.append(label,note,score,button);calculate();$('modalBody').append(section);
+     section.append(label,quickMedical,note,score,button);calculate();$('modalBody').append(section);
    }
 
    async function showTrainingGroupPicker(applicationId, currentGroup = '', applicantRecord = null) {
@@ -1390,9 +1430,14 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        <select id="decisionSelect"><option value="">เลือกผลการสมัคร</option>${options}</select>
        <p><label for="decisionReason" id="decisionReasonLabel">เหตุผลการพิจารณา *</label><textarea id="decisionReason" rows="4" maxlength="1900" placeholder="ระบุเหตุผล"></textarea></p>
        <div class="decision-quick-reasons" role="group" aria-label="ข้อความเหตุผลสำเร็จรูป">
-         <span class="decision-quick-title">ข้อความสำเร็จรูป (กดเพื่อใส่ในช่องเหตุผล)</span>
+         <span class="decision-quick-title">ข้อความสำเร็จรูป (กดได้หลายข้อความ ระบบจะเพิ่มต่อท้าย)</span>
          <button type="button" class="ghost decision-quick-button" data-decision-reason="ผ่านการตรวจสอบ">ผ่านการตรวจสอบ</button>
          <button type="button" class="ghost decision-quick-button" data-decision-reason="ไม่ผ่านการตรวจสอบ">ไม่ผ่านการตรวจสอบ</button>
+         <button type="button" class="ghost decision-quick-button" data-decision-reason="อายุเกินกว่ากำหนด">อายุเกินกว่ากำหนด</button>
+         <button type="button" class="ghost decision-quick-button" data-decision-reason="ไม่ผ่านการพิจารณา">ไม่ผ่านการพิจารณา</button>
+         <button type="button" class="ghost decision-quick-button" data-decision-reason="ไม่ผ่านการพิจารณาจากสภาฟินิกซ์">ไม่ผ่านการพิจารณาจากสภาฟินิกซ์</button>
+         <button type="button" class="ghost decision-quick-button" data-decision-reason="ผ่านการพิจารณาจากสภาฟินิกซ์">ผ่านการพิจารณาจากสภาฟินิกซ์</button>
+         <button type="button" class="ghost decision-quick-button" data-decision-reason="ไม่ระบุ">ไม่ระบุ</button>
        </div>
        <button type="button" id="decisionSave" class="orange">บันทึกผลการอนุมัติ</button>`;
      $('modalBody').append(section);
@@ -1401,10 +1446,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      const noteLabel = $('decisionReasonLabel');
      section.querySelectorAll('[data-decision-reason]').forEach(button => {
        button.addEventListener('click', () => {
-         notes.value = button.dataset.decisionReason;
-         notes.dispatchEvent(new Event('input', { bubbles: true }));
-         notes.focus();
-         notes.setSelectionRange(notes.value.length, notes.value.length);
+         appendQuickText(notes,button.dataset.decisionReason);
        });
      });
      const updateHint = () => {
