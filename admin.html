@@ -538,7 +538,7 @@ button, .btn { font-size: 17px; line-height: 1.45; }
     </section>
     <section class="card hidden" id="tab-medical">
       <h2>การตรวจร่างกาย</h2>
-      <p class="muted">ผู้สมัครที่ได้รับอนุมัติแล้วจะเข้าสู่ขั้นตอนนี้ ต้องผ่านอย่างน้อย 70% (7 จาก 10 รายการ) โดยผู้ประเมินทางการแพทย์</p>
+      <p class="muted">ผู้สมัครที่ได้รับอนุมัติแล้วจะเข้าสู่ขั้นตอนนี้ ต้องผ่านอย่างน้อย 8 จาก 10 รายการ และต้องผ่านข้อ 8, 9, 10 ทั้งหมด โดยผู้ประเมินทางการแพทย์</p>
       <div class="medical-group-menu" id="medicalGroupMenu" aria-label="เลือกกลุ่มตรวจร่างกาย"></div>
       <div class="medical-group-heading" id="medicalGroupHeading" aria-live="polite"></div>
       <div class="list" id="medicalList"></div>
@@ -663,7 +663,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      'สำเนาข้อมูลครอบครัว', 'หนังสืออนุมัติ'
    ];
 
-   const MEDICAL_CHECKS = ["การซักประวัติสุขภาพและประเมินความพร้อมโดยบุคลากรทางการแพทย์", "การตรวจร่างกายทั่วไปโดยแพทย์", "ความดันโลหิตและชีพจร", "การประเมินการมองเห็น", "การประเมินการได้ยิน", "การประเมินระบบหัวใจและหลอดเลือด", "การประเมินระบบทางเดินหายใจ", "การประเมินกล้ามเนื้อ กระดูก ข้อต่อ และการเคลื่อนไหว", "การประเมินระบบประสาทและการทรงตัว", "การประเมินความสามารถออกแรงตามความเหมาะสมโดยผู้เชี่ยวชาญ"];
+   const MEDICAL_CHECKS = ["การซักประวัติสุขภาพและประเมินความพร้อมโดยบุคลากรทางการแพทย์", "การตรวจร่างกายทั่วไปโดยแพทย์", "ความดันโลหิตและชีพจร", "การประเมินการมองเห็น", "การประเมินการได้ยิน", "การประเมินระบบทางเดินหายใจ", "การประเมินระบบประสาทและการทรงตัว", "การประเมินความสามารถออกแรงตามความเหมาะสมโดยผู้เชี่ยวชาญ", "การประเมินกล้ามเนื้อ กระดูก ข้อต่อ และการเคลื่อนไหว", "การประเมินระบบหัวใจและหลอดเลือด"];
    const REGION_PROVINCES = {
      "ภาคเหนือ": ["เชียงใหม่", "เชียงราย", "ลำพูน", "ลำปาง", "แพร่", "น่าน", "พะเยา", "แม่ฮ่องสอน", "อุตรดิตถ์"],
      "ภาคตะวันออกเฉียงเหนือ": ["นครราชสีมา", "บุรีรัมย์", "สุรินทร์", "ศรีสะเกษ", "อุบลราชธานี", "ยโสธร", "ชัยภูมิ", "อำนาจเจริญ", "หนองบัวลำภู", "ขอนแก่น", "อุดรธานี", "เลย", "หนองคาย", "มหาสารคาม", "ร้อยเอ็ด", "กาฬสินธุ์", "สกลนคร", "นครพนม", "มุกดาหาร", "บึงกาฬ"],
@@ -1314,7 +1314,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      const section=document.createElement('section');
      section.className='card';
      let previous={}; try{previous=JSON.parse(record.MedicalData||'{}')}catch(e){}
-     section.innerHTML='<h3>รายการตรวจร่างกาย 10 หัวข้อ</h3><p class="muted">เลือกผลทุกข้อโดยผู้ประเมินทางการแพทย์ คะแนนผ่านอย่างน้อย 7/10 (70%) ผลนี้เป็นเกณฑ์ของโครงการ ไม่ทดแทนการรับรองความปลอดภัยจากแพทย์</p>';
+     section.innerHTML='<h3>รายการตรวจร่างกาย 10 หัวข้อ</h3><p class="muted">เลือกผลทุกข้อโดยผู้ประเมินทางการแพทย์ ต้องผ่านอย่างน้อย 8/10 (80%) และต้องผ่านข้อ 8, 9, 10 ทั้งหมด ผลนี้เป็นเกณฑ์ของโครงการ ไม่ทดแทนการรับรองความปลอดภัยจากแพทย์</p>';
      const passAllLabel=document.createElement('label');
      passAllLabel.className='medical-pass-all';
      passAllLabel.innerHTML='<input type="checkbox" id="medicalPassAll"><span>ผ่านทั้งหมด (10 หัวข้อ)</span>';
@@ -1331,7 +1331,8 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      });
      MEDICAL_CHECKS.forEach((name,i)=>{
        const row=document.createElement('div');row.className='review-row';
-       row.innerHTML=`<span class="review-question">${i+1}. ${esc(name)}</span><div class="review-choice-group" role="radiogroup">${['ผ่าน','ไม่ผ่าน'].map(v=>`<label class="review-choice ${v==='ผ่าน'?'review-choice--pass':'review-choice--fail'}"><input type="radio" name="medicalCheck${i}" data-medical="${i}" value="${v}" ${previous[name]===v?'checked':''}><span>${v==='ผ่าน'?'✓ ผ่าน':'✕ ไม่ผ่าน'}</span></label>`).join('')}</div>`;
+       if(i>=7) row.classList.add('medical-required');
+       row.innerHTML=`<span class="review-question">${i+1}. ${esc(name)}${i>=7?' <strong style="color:#c34b35">(บังคับผ่าน)</strong>':''}</span><div class="review-choice-group" role="radiogroup">${['ผ่าน','ไม่ผ่าน'].map(v=>`<label class="review-choice ${v==='ผ่าน'?'review-choice--pass':'review-choice--fail'}"><input type="radio" name="medicalCheck${i}" data-medical="${i}" value="${v}" ${previous[name]===v?'checked':''}><span>${v==='ผ่าน'?'✓ ผ่าน':'✕ ไม่ผ่าน'}</span></label>`).join('')}</div>`;
        section.append(row);
      });
      const note=document.createElement('textarea');
@@ -1348,7 +1349,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        btn.onclick=()=>appendQuickText(note,btn.dataset.medicalReason);
      });
      const score=document.createElement('p');score.className='muted';
-     const calculate=()=>{let count=0,answered=0;MEDICAL_CHECKS.forEach((_,i)=>{const v=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(v){answered++;if(v==='ผ่าน')count++;}});score.textContent=`ผ่าน ${count}/10 (${count*10}%) — ตอบแล้ว ${answered}/10 ข้อ`;passAllMedical.checked=count===MEDICAL_CHECKS.length;};
+     const calculate=()=>{let count=0,answered=0;MEDICAL_CHECKS.forEach((_,i)=>{const v=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(v){answered++;if(v==='ผ่าน')count++;}});const mandatoryPassed=[7,8,9].every(i=>section.querySelector(`input[data-medical="${i}"]:checked`)?.value==='ผ่าน');score.textContent=`ผ่าน ${count}/10 (${count*10}%) — ตอบแล้ว ${answered}/10 ข้อ — ${answered===10?(count>=8&&mandatoryPassed?'ผ่านเกณฑ์':'ไม่ผ่านเกณฑ์'):'รอตรวจครบ'} (ข้อ 8–10 ต้องผ่านทั้งหมด)`;passAllMedical.checked=count===MEDICAL_CHECKS.length;};
      section.addEventListener('change',calculate);
      const button=document.createElement('button');button.type='button';button.className='orange';button.textContent='บันทึกผลตรวจร่างกาย';
      button.onclick=async()=>{
