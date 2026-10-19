@@ -199,39 +199,7 @@ button, .btn { font-size: 17px; line-height: 1.45; }
   .crp-applicant-identity .crp-applicant-id{font-size:15px;color:#526681}
   @media(max-width:600px){.crp-applicant-identity{padding:13px}.crp-applicant-identity strong{font-size:19px}}
 </style>
- 
-<style id="crp-responsive-fix">
-html,body{max-width:100%;overflow-x:hidden}
-main,header,nav,.card,.hero,.modal{min-width:0}
-img,video,canvas,svg{max-width:100%;height:auto}
-input,select,textarea,button{max-width:100%}
-input,select,textarea{min-width:0}
-.card,.hero,.modal,.item{overflow-wrap:anywhere}
-.overlay,.crp-notice-layer{height:100dvh;overflow-y:auto;overscroll-behavior:contain}
-.modal{max-height:calc(100dvh - 30px);overscroll-behavior:contain}
-@media(max-width:760px){
- header{padding:14px 16px}nav{flex-wrap:wrap;gap:12px}
- main{padding:0 14px;margin:18px auto}
- .card{padding:16px;border-radius:14px}.hero{padding:22px}
- .grid,.app-filter-grid,.review-applicant-grid{grid-template-columns:1fr}
- .stats,.public-stats{gap:10px}
- .modaltop{align-items:flex-start;flex-wrap:wrap}
- .modal{padding:16px}
- .medical-group-menu{grid-template-columns:repeat(2,minmax(0,1fr))}
- .tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
- .tabs button{min-height:54px;font-size:14px;padding:10px 7px}
- table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
- button,.btn{min-height:44px}
-}
-@media(max-width:420px){
- .list{grid-template-columns:1fr}
- .public-stats{grid-template-columns:1fr 1fr}
- .brand{font-size:17px}.brand-logo{width:34px;height:34px}
- .search{flex-direction:column}
- .decision-result-buttons,.review-choice-group{grid-template-columns:1fr}
-}
-</style>
-</head>
+ </head>
  <body>
   <header>
    <nav>
@@ -654,15 +622,8 @@ window.addEventListener('message',event=>{
     data.ok ? item.resolve(data.data) : item.reject(new Error(data.message||'เกิดข้อผิดพลาด'));
   }
 });
-if (!(window.google && google.script && google.script.run)) document.body.appendChild(bridgeFrame);
+document.body.appendChild(bridgeFrame);
 async function callServer(action,payload={}) {
-  if (window.google && google.script && google.script.run) {
-    return new Promise((resolve,reject) => {
-      google.script.run.withSuccessHandler(resolve).withFailureHandler(error =>
-        reject(new Error(error && error.message ? error.message : String(error))))
-        .apiRequest(action,payload);
-    });
-  }
   if(!bridgeReady) await new Promise((resolve,reject)=>{
     let finished=false;
     const onReady=()=>{ if(finished)return; finished=true;clearTimeout(timer);resolve(); };
@@ -1618,12 +1579,5 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    function closeModal() { $('overlay').classList.add('hidden'); }$('closeModal').onclick = closeModal;
    $('overlay').onclick = e => { if (e.target ===$('overlay')) closeModal(); };
   </script>
- 
-<script>
-if (window.google && google.script && google.script.run) {
-  document.querySelectorAll('a[href="./index.html"]').forEach(a=>a.href='?page=public');
-  document.querySelectorAll('a[href="./admin.html"]').forEach(a=>a.href='?page=admin');
-}
-</script>
-</body>
+ </body>
 </html>
