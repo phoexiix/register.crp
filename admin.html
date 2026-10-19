@@ -538,7 +538,7 @@ button, .btn { font-size: 17px; line-height: 1.45; }
     </section>
     <section class="card hidden" id="tab-medical">
       <h2>การตรวจร่างกาย</h2>
-      <p class="muted">ผู้สมัครที่ได้รับอนุมัติแล้วจะเข้าสู่ขั้นตอนนี้ ต้องผ่านอย่างน้อย 8 จาก 10 รายการ และต้องผ่านข้อ 8, 9, 10 ทั้งหมด โดยผู้ประเมินทางการแพทย์</p>
+      <p class="muted">ผู้สมัครที่ได้รับอนุมัติแล้วจะเข้าสู่ขั้นตอนนี้ ต้องผ่านอย่างน้อย 6 จาก 10 รายการ และต้องผ่านข้อ 8, 9, 10 ทั้งหมด โดยผู้ประเมินทางการแพทย์</p>
       <div class="medical-group-menu" id="medicalGroupMenu" aria-label="เลือกกลุ่มตรวจร่างกาย"></div>
       <div class="medical-group-heading" id="medicalGroupHeading" aria-live="polite"></div>
       <div class="list" id="medicalList"></div>
@@ -1314,7 +1314,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      const section=document.createElement('section');
      section.className='card';
      let previous={}; try{previous=JSON.parse(record.MedicalData||'{}')}catch(e){}
-     section.innerHTML='<h3>รายการตรวจร่างกาย 10 หัวข้อ</h3><p class="muted">เลือกผลทุกข้อโดยผู้ประเมินทางการแพทย์ ต้องผ่านอย่างน้อย 8/10 (80%) และต้องผ่านข้อ 8, 9, 10 ทั้งหมด ผลนี้เป็นเกณฑ์ของโครงการ ไม่ทดแทนการรับรองความปลอดภัยจากแพทย์</p>';
+     section.innerHTML='<h3>รายการตรวจร่างกาย 10 หัวข้อ</h3><p class="muted">เลือกผลทุกข้อโดยผู้ประเมินทางการแพทย์ ต้องผ่านอย่างน้อย 6/10 (60%) และต้องผ่านข้อ 8, 9, 10 ทั้งหมด ผลนี้เป็นเกณฑ์ของโครงการ ไม่ทดแทนการรับรองความปลอดภัยจากแพทย์</p>';
      const passAllLabel=document.createElement('label');
      passAllLabel.className='medical-pass-all';
      passAllLabel.innerHTML='<input type="checkbox" id="medicalPassAll"><span>ผ่านทั้งหมด (10 หัวข้อ)</span>';
@@ -1349,7 +1349,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        btn.onclick=()=>appendQuickText(note,btn.dataset.medicalReason);
      });
      const score=document.createElement('p');score.className='muted';
-     const calculate=()=>{let count=0,answered=0;MEDICAL_CHECKS.forEach((_,i)=>{const v=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(v){answered++;if(v==='ผ่าน')count++;}});const mandatoryPassed=[7,8,9].every(i=>section.querySelector(`input[data-medical="${i}"]:checked`)?.value==='ผ่าน');score.textContent=`ผ่าน ${count}/10 (${count*10}%) — ตอบแล้ว ${answered}/10 ข้อ — ${answered===10?(count>=8&&mandatoryPassed?'ผ่านเกณฑ์':'ไม่ผ่านเกณฑ์'):'รอตรวจครบ'} (ข้อ 8–10 ต้องผ่านทั้งหมด)`;passAllMedical.checked=count===MEDICAL_CHECKS.length;};
+     const calculate=()=>{let count=0,answered=0;MEDICAL_CHECKS.forEach((_,i)=>{const v=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(v){answered++;if(v==='ผ่าน')count++;}});const mandatoryPassed=[7,8,9].every(i=>section.querySelector(`input[data-medical="${i}"]:checked`)?.value==='ผ่าน');score.textContent=`ผ่าน ${count}/10 (${count*10}%) — ตอบแล้ว ${answered}/10 ข้อ — ${answered===10?(count>=6&&mandatoryPassed?'ผ่านเกณฑ์':'ไม่ผ่านเกณฑ์'):'รอตรวจครบ'} (ข้อ 8–10 ต้องผ่านทั้งหมด)`;passAllMedical.checked=count===MEDICAL_CHECKS.length;};
      section.addEventListener('change',calculate);
      const button=document.createElement('button');button.type='button';button.className='orange';button.textContent='บันทึกผลตรวจร่างกาย';
      button.onclick=async()=>{
