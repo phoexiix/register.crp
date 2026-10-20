@@ -1570,6 +1570,11 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      }
      const label=document.createElement('label');label.textContent='แพทย์ผู้เชี่ยวชาญและรายละเอียดผลตรวจเพิ่มเติม *';
      const note=document.createElement('textarea');note.rows=3;note.maxLength=1600;note.placeholder='ชื่อผู้ตรวจ วันที่ตรวจ และข้อสังเกตของผลตรวจเพิ่มเติม';
+     // ใช้ปุ่มข้อความสำเร็จรูปชุดเดียวกับหน้าตรวจร่างกายปกติ (กดแล้วเติมลงช่องรายละเอียด)
+     const quick=document.createElement('div');quick.className='decision-quick-reasons medical-quick-reasons';
+     quick.setAttribute('role','group');quick.setAttribute('aria-label','ข้อความผลตรวจเพิ่มเติมสำเร็จรูป');
+     quick.innerHTML='<span class="decision-quick-title">ข้อความสำเร็จรูป</span>'+['ผ่านการตรวจสอบ','ไม่ผ่านการตรวจสอบ','ไม่เข้ารับการตรวจร่างกาย','ไม่ระบุ'].map(t=>`<button type="button" class="ghost decision-quick-button" data-expert-reason="${t}">${t}</button>`).join('');
+     quick.querySelectorAll('[data-expert-reason]').forEach(b=>b.onclick=()=>appendQuickText(note,b.dataset.expertReason));
      const button=document.createElement('button');button.type='button';button.className='orange';button.textContent='บันทึกผลตรวจเพิ่มเติม';
      button.onclick=async()=>{
        const checks={};for(const {name,index} of pending){checks[name]=section.querySelector(`input[data-expert-medical="${index}"]:checked`)?.value||'';}
@@ -1582,7 +1587,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
          msg(`บันทึกผลตรวจเพิ่มเติม ${result.resolvedCount} ข้อ — คะแนนรวม ${result.percent}% — ${result.status}`);
        }catch(error){}finally{button.disabled=false;}
      };
-     section.append(label,note,button);$('modalBody').append(section);
+     section.append(label,quick,note,button);$('modalBody').append(section);
    }
 
    async function showTrainingGroupPicker(applicationId, currentGroup = '', applicantRecord = null) {
