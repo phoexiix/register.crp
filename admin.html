@@ -230,6 +230,14 @@ input,select,textarea{min-width:0}
  .search{flex-direction:column}
  .decision-result-buttons,.review-choice-group{grid-template-columns:1fr}
 }
+
+/* เพิ่มเฉพาะการเข้าถึง ไม่เปลี่ยนโครงสร้างหรือสีหลักเดิม */
+.crp-login-button{background:#1d529b!important;color:#fff!important;border:2px solid #f4a24e!important;font-weight:750;box-shadow:0 4px 12px #234f7a22}
+.crp-login-button:hover{background:#153d77!important}
+.crp-login-link{display:inline-flex;align-items:center;justify-content:center;padding:9px 14px;border:2px solid #df8751;border-radius:11px;background:#fff6ec;color:#894521;min-height:44px}
+.crp-login-link:hover{background:#ffead5}
+:where(button,a,input,textarea,select,[tabindex]):focus-visible{outline:3px solid #f28b31;outline-offset:3px}
+.overlay:not(.hidden) .modal{outline:none}
 </style>
 </head>
  <body>
@@ -242,7 +250,7 @@ input,select,textarea{min-width:0}
       STAFF CENTER
      </b>
     </a>
-    <a class="navlink" href="./index.html">
+    <a class="navlink crp-login-link" href="./index.html">
      ← หน้าตรวจสอบผู้สมัคร
     </a>
    </nav>
@@ -267,7 +275,7 @@ input,select,textarea{min-width:0}
      </label>
      <input autocomplete="current-password" id="password" required="" type="password"/>
      <div class="actions">
-      <button type="submit">
+      <button type="submit" class="crp-login-button">
        เข้าสู่ระบบ
       </button>
      </div>
@@ -700,7 +708,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    </script>
   <script>
    const $ = id => document.getElementById(id);
-   const STATUS = ['รอตรวจสอบ', 'ไม่ผ่านการตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก', 'ผ่านการคัดเลือก (กรณีพิเศษ)', 'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)'];
+   const STATUS = ['รอตรวจสอบ', 'ไม่ผ่านการตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก', 'ผ่านการคัดเลือก (กรณีพิเศษ)', 'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)', 'รอเลือกกลุ่มฝึก', 'รอตรวจร่างกาย', 'ไม่ผ่านการตรวจร่างกาย', 'ผ่านการคัดเลือกเข้ารับการฝึก'];
    const CHECKS = [
      'มีอายุตามกำหนด',
      'ไม่เป็นผู้ดำรงตำแหน่งทางการเมือง', 'ไม่เป็นบุคคลล้มละลาย',
@@ -961,7 +969,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      msg('กำลังโหลดสรุปผล...');
      try {
        const r = await api('getSummary');
-       $('stats').innerHTML = [['ผู้สมัครทั้งหมด', r.total], ...STATUS.map(s => [s, (r.byStatus || {})[s] || 0])]
+       $('stats').innerHTML = [['ผู้สมัครทั้งหมด', r.total], ['ผ่านเข้ารับการฝึก (ตรงกับหน้าผู้ใช้)',(r.publicCounts||{}).selected||0], ['ไม่ได้รับคัดเลือก (ตรงกับหน้าผู้ใช้)',(r.publicCounts||{}).notSelected||0], ...STATUS.map(s => [s, (r.byStatus || {})[s] || 0])]
          .map(([k, v]) => `<div class="stat"><span>${esc(k)}</span><strong>${Number(v) || 0}</strong></div>`).join('');
        $('provinces').innerHTML = Object.entries(r.byProvince || {})
          .sort((a, b) => b[1] - a[1])
@@ -1624,6 +1632,73 @@ if (window.google && google.script && google.script.run) {
   document.querySelectorAll('a[href="./index.html"]').forEach(a=>a.href='?page=public');
   document.querySelectorAll('a[href="./admin.html"]').forEach(a=>a.href='?page=admin');
 }
+</script>
+
+<script id="crp-keyboard-shortcuts">
+(function(){
+ const overlay=document.getElementById('overlay');
+ const layer=document.getElementById('crpNoticeLayer');
+ const close=document.getElementById('closeModal');
+ const ok=document.getElementById('crpNoticeOk');
+ let previous=null;
+ const isOpen=el=>!el.classList.contains('hidden');
+ function dialogTop(){return isOpen(layer)?layer:isOpen(overlay)?overlay:null;}
+ function focusable(root){return [...root.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(e=>e.getClientRects().length);}
+ for(const item of [overlay,layer]){
+   const observer=new MutationObserver(()=>{
+     if(isOpen(item)){
+       if(!item.contains(document.activeElement)){
+         previous=document.activeElement;
+         const el=item===layer?ok:close;
+         if(el && el.getClientRects().length)el.focus({preventScroll:true});
+       }
+     }else if(!dialogTop()&&previous){
+       const node=previous;previous=null;
+       if(node.isConnected)node.focus({preventScroll:true});
+     }
+   });
+   observer.observe(item,{attributes:true,attributeFilter:['class']});
+ }
+ overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','modalTitle');
+ document.addEventListener('keydown',event=>{
+   const active=dialogTop();
+   if(event.key==='Escape'){
+     if(active===layer){
+       const noticeButton=layer.querySelector('#crpNoticeOk');
+       if(noticeButton && !noticeButton.classList.contains('hidden') && !noticeButton.disabled){event.preventDefault();noticeButton.click();}
+       return;
+     }
+     if(active===overlay){event.preventDefault();close.click();}
+     return;
+   }
+   if(active && event.key==='Tab'){
+     const els=focusable(active);if(!els.length){event.preventDefault();return;}
+     const first=els[0],last=els[els.length-1];
+     if(!active.contains(document.activeElement)){event.preventDefault();first.focus();return;}
+     if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}
+     else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
+     return;
+   }
+   if(active)return;
+   const target=event.target;
+   const typing=target.matches('input,textarea,select,[contenteditable="true"]');
+   if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k' || !typing&&event.key==='/'){
+     if(document.getElementById('appView').classList.contains('hidden'))return;
+     event.preventDefault();
+     const current=document.querySelector('[data-tab].active')?.dataset.tab;
+     const searchId=current==='approval'?'approvalFind':current==='applications'?'find':null;
+     if(searchId)document.getElementById(searchId).focus();
+     else {const tab=document.querySelector('[data-tab="applications"]');tab.click();requestAnimationFrame(()=>document.getElementById('find').focus());}
+   }
+   const tab=target.closest('[data-tab]');
+   if(tab && ['ArrowRight','ArrowLeft','Home','End'].includes(event.key)){
+     const tabs=[...document.querySelectorAll('[data-tab]')];
+     let idx=tabs.indexOf(tab);
+     idx=event.key==='Home'?0:event.key==='End'?tabs.length-1:(idx+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+     event.preventDefault();tabs[idx].focus();tabs[idx].click();
+   }
+ });
+})();
 </script>
 </body>
 </html>
