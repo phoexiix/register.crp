@@ -91,6 +91,57 @@ input,select,textarea{min-width:0}
 .overlay:not(.hidden) .modal{outline:none}
 @media(max-width:680px){.crp-login-link{width:auto;max-width:100%}}
 </style>
+<style>
+
+/* CRP site-wide typography and compact proportional layout */
+html { font-size: 16px; }
+body { font-size: 16px; line-height: 1.5; }
+main { max-width: 1180px; margin: 22px auto; padding: 0 16px; }
+header { padding-top: 15px; padding-bottom: 15px; }
+.hero { padding: 24px; border-radius: 17px; }
+.hero h1 { font-size: clamp(26px, 3.2vw, 36px); }
+.card { padding: 17px; border-radius: 14px; margin-top: 14px; }
+h2 { font-size: clamp(21px, 2.2vw, 25px); line-height: 1.35; }
+h3 { font-size: 19px; line-height: 1.4; }
+p, dt, dd, td, th { font-size: 16px; line-height: 1.5; }
+label, .app-filter-form label { font-size: 15px; line-height: 1.4; }
+.muted, small, .item small { font-size: 14px; line-height: 1.45; }
+.brand { font-size: 21px; }
+.navlink { font-size: 16px; }
+input, select, textarea { font-size: 16px; padding: 9px 11px; min-height: 39px; border-radius: 9px; }
+textarea { min-height: 90px; }
+button, .btn { font-size: 14px; line-height: 1.4; padding: 8px 12px; border-radius: 9px; }
+.tabs { gap: 8px; }
+.tabs button { font-size: 14px; min-height: 48px; padding: 8px 6px; }
+.item { padding: 12px; font-size: 16px; line-height: 1.45; border-radius: 11px; }
+.item strong { font-size: 16px; }
+.pill { font-size: 12px; padding: 4px 8px; }
+.grid { gap: 12px; }
+.stats { gap: 10px; }
+.stat { padding: 14px; }
+.stat strong { font-size: 28px; }
+.stat span { font-size: 15px; }
+.modal { padding: 18px; border-radius: 15px; }
+.actions { gap: 7px; margin-top: 13px; }
+td, th { padding: 9px; }
+.message { font-size: 15px; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid #527cdb; outline-offset: 2px; }
+@media(max-width:680px) {
+ html,body { font-size: 16px; }
+ main { margin: 14px auto; padding: 0 11px; }
+ header { padding: 12px 14px; }
+ .hero { padding: 17px; }
+ .card { padding: 13px; margin-top: 11px; }
+ .modal { padding: 13px; }
+ .brand { font-size: 19px; }
+ .tabs { gap: 5px; }
+ .tabs button { font-size: 12px; min-height: 53px; padding: 6px 4px; }
+ .item { padding: 10px; }
+ .item strong { font-size: 16px; }
+ input,select,textarea { font-size: 16px; }
+ .pill { font-size: 12px; }
+}
+</style>
 </head><body><header><nav><a class="brand" href="./index.html"><img src="https://i.postimg.cc/qMDpFg75/albatross.png" alt="CRP Logo" class="brand-logo">CRP <b>RECRUITMENT</b></a><div style="display:flex;flex-wrap:wrap;gap:14px"><button type="button" class="public-tab" data-public-tab="processSection">ขั้นตอนคัดเลือก</button><button type="button" class="public-tab" data-public-tab="applicantsSection">รายชื่อผู้สมัคร</button><button type="button" class="public-tab" data-public-tab="medicalSection">การตรวจร่างกาย</button><button type="button" class="public-tab" data-public-tab="trainingSection">ผู้ผ่านเข้าฝึก</button><a class="navlink crp-login-link" href="./admin.html">สำหรับเจ้าหน้าที่ ↗</a></div></nav></header><main><section class="hero" id="publicHero"><span class="pill">Civilian Recruitment & Preparation</span><h1>โครงการคัดเลือกและเตรียมกำลังพล<br>สำหรับบุคคลทั่วไป</h1><p class="muted">ตรวจสอบข้อมูลการลงทะเบียนและผลการพิจารณาของผู้สมัคร</p></section><section class="card" id="publicSummarySection" aria-label="สถิติผู้สมัคร"><h2>สรุปจำนวนผู้สมัคร</h2><div class="public-stats" id="publicStats"><div class="public-stat"><span>สมัครทั้งหมด</span><strong id="countTotal">—</strong><small>คน</small></div><div class="public-stat"><span>รอตรวจสอบ</span><strong id="countPendingReview">—</strong><small>คน</small></div><div class="public-stat"><span>ไม่ผ่านการตรวจสอบ</span><strong id="countFailedReview">—</strong><small>คน</small></div><div class="public-stat"><span>รออนุมัติ</span><strong id="countPendingApproval">—</strong><small>คน</small></div><div class="public-stat"><span>รอตรวจร่างกาย</span><strong id="countPendingMedical">—</strong><small>คน</small></div><div class="public-stat"><span>ผ่านการคัดเลือก</span><strong id="countSelected">—</strong><small>คน</small></div><div class="public-stat"><span>ไม่ผ่านการคัดเลือก</span><strong id="countNotSelected">—</strong><small>คน</small></div></div><p class="muted" id="publicSummaryMessage" aria-live="polite">กำลังนับจำนวนผู้สมัครจากข้อมูลในระบบ...</p></section><section class="card" id="processSection"><h2>ขั้นตอนการคัดเลือก</h2><div class="process-steps"><div>1. ลงทะเบียนสมัคร</div><div>2. ตรวจสอบคุณสมบัติ</div><div>3. พิจารณาอนุมัติ</div><div>4. เลือกกลุ่มฝึก</div><div>5. ตรวจร่างกาย</div><div>6. ผ่านการคัดเลือกเข้ารับการฝึก</div></div><p class="muted">ตรวจสอบสถานะปัจจุบันของแต่ละคนได้ในรายการผู้สมัครด้านล่าง</p></section>
 <section class="card hidden" id="medicalSection"><h2>การตรวจร่างกาย</h2><p class="muted">ตรวจร่างกาย 20 รายการ 4 ขั้นตอน เกณฑ์ผ่านอย่างน้อย 14 ข้อ (70%) และต้องผ่านข้อบังคับ ★ จำนวน 5 ข้อ (ข้อ 6, 7, 11, 12 และ 19) หากหัวข้อใดต้องตรวจเพิ่มเติม จะรอผลการตรวจจากแพทย์ผู้เชี่ยวชาญก่อนสรุปผล</p><ol class="medical-list"><li>การซักประวัติสุขภาพทั่วไป</li><li>การซักประวัติความเสี่ยงทางพันธุกรรมและครอบครัว</li><li>การซักประวัติพฤติกรรมและการใช้ยา</li><li>การตรวจสภาพร่างกายทั่วไป</li><li>การตรวจสัญญาณชีพ</li><li>การตรวจระบบหัวใจและหลอดเลือด <strong class="crp-required-label">(บังคับผ่าน)</strong></li><li>การตรวจระบบทางเดินหายใจและปอด <strong class="crp-required-label">(บังคับผ่าน)</strong></li><li>การตรวจสายตาและการมองเห็น</li><li>การตรวจการได้ยิน</li><li>การตรวจหู คอ จมูก และช่องปาก</li><li>การตรวจระบบประสาทและการทรงตัว <strong class="crp-required-label">(บังคับผ่าน)</strong></li><li>การตรวจกระดูกสันหลังและระบบกล้ามเนื้อ <strong class="crp-required-label">(บังคับผ่าน)</strong></li><li>การตรวจการเคลื่อนไหวและความแข็งแรงพื้นฐาน</li><li>การตรวจช่องท้อง ผิวหนัง และร่างกายส่วนอื่น</li><li>การตรวจความสมบูรณ์ของเม็ดเลือด (CBC)</li><li>การตรวจเลือดด้านเมตาบอลิซึมและอวัยวะสำคัญ</li><li>การตรวจปัสสาวะ</li><li>การประเมินสุขภาพจิตและความพร้อมทางจิตวิทยา</li><li>การทดสอบความทนทานของหัวใจและปอดขณะออกแรง <strong class="crp-required-label">(บังคับผ่าน)</strong></li><li>การทดสอบสมรรถภาพตามภารกิจจริง</li></ol></section>
 <section class="card hidden" id="trainingSection"><h2>รายชื่อผู้ผ่านการคัดเลือกเข้ารับการฝึก</h2><p class="muted">ผู้ที่ผ่านขั้นตอนอนุมัติและตรวจร่างกายอย่างน้อย 70%</p><form class="search" id="trainingSearchForm"><input id="trainingQuery" placeholder="ค้นหารายชื่อผู้ผ่านการคัดเลือกเข้าฝึก"><button>ค้นหา</button></form><p class="message" id="trainingMsg"></p><div class="training-filter"><label for="groupFilter">กรองตามกลุ่มฝึก</label><select id="groupFilter"><option value="">ทุกกลุ่ม</option><option value="1/1">กลุ่ม 1/1</option><option value="1/2">กลุ่ม 1/2</option><option value="2/1">กลุ่ม 2/1</option><option value="2/2">กลุ่ม 2/2</option><option value="3/1">กลุ่ม 3/1</option><option value="3/2">กลุ่ม 3/2</option><option value="4/1">กลุ่ม 4/1</option><option value="4/2">กลุ่ม 4/2</option></select></div><div class="list" id="trainingResults"></div></section><section class="card hidden" id="applicantsSection"><h2>ค้นหาข้อมูลผู้สมัคร</h2><p class="muted">รายชื่อผู้สมัครทั้งหมด สามารถค้นหาด้วยชื่อ นามสกุล หรือรหัสผู้สมัคร</p><form class="search" id="searchForm"><input autocomplete="off" id="query" placeholder="ค้นหาชื่อ นามสกุล หรือรหัสผู้สมัคร"><button>ค้นหา</button></form><p class="message" id="msg"></p><div class="list" id="results"></div></section></main><div class="overlay hidden" id="overlay"><div class="modal"><div class="modaltop"><h2>รายละเอียดผู้สมัคร</h2><button class="ghost" id="close">ปิด ✕</button></div><div id="details"></div></div></div><footer>CRP — Recruitment & Preparation</footer><script>
