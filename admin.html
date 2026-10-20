@@ -216,6 +216,17 @@ button, .btn { font-size: 17px; line-height: 1.45; }
    .medical-star{font-size:12px;color:#bc422e;white-space:nowrap}
    .medical-step-navigation{display:flex;justify-content:space-between;gap:10px;margin:14px 0}
    @media(max-width:640px){.medical-step-tab{flex:1 1 46%}.medical-wizard .review-row{flex-wrap:wrap;gap:8px}.medical-wizard .review-choice-group{width:100%;flex-wrap:wrap}}
+
+   /* การตรวจร่างกาย: เรียงทั้ง 4 ขั้นตอนต่อกัน และลดขนาดเฉพาะปุ่ม */
+   .medical-wizard .medical-step-panel{display:block!important;margin:16px 0 24px;padding:12px 14px 15px;border:1px solid #e0e8f3;border-radius:13px;background:#fff}
+   .medical-wizard .medical-step-panel h4{margin:0 0 12px;color:#294a8c;line-height:1.5}
+   .medical-wizard .review-choice-group{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:5px;width:auto;min-width:0}
+   .medical-wizard .review-choice{display:inline-flex;flex:none;min-width:0;min-height:31px;padding:5px 8px;gap:5px;font-size:12px;line-height:1.25;border-radius:8px;white-space:nowrap}
+   .medical-wizard .review-choice input[type="radio"]{width:14px;height:14px;min-height:14px;border-width:1.5px;border-radius:4px}
+   .medical-wizard .review-choice input[type="radio"]:checked::after{font-size:14px;inset:-4px -1px}
+   .medical-wizard .medical-small-action,.medical-wizard .decision-quick-button{font-size:12px!important;min-height:29px!important;padding:5px 9px!important;border-radius:7px!important}
+   .medical-wizard > button.orange{font-size:13px;min-height:34px;padding:8px 12px;border-radius:8px}
+   @media(max-width:760px){.medical-wizard .review-choice-group{justify-content:flex-start;width:100%}.medical-wizard .medical-step-panel{padding:11px 10px}}
 </style>
  
 <style id="crp-responsive-fix">
@@ -1435,15 +1446,13 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      const section=document.createElement('section'); section.className='card medical-wizard';
      let previous={}; try{previous=JSON.parse(record.MedicalData||'{}')}catch(e){}
      section.innerHTML='<h3>การตรวจร่างกาย 4 ขั้นตอน (20 รายการ)</h3><p class="muted">ผ่านอย่างน้อย 14/20 (70%) และต้องผ่านรายการบังคับ ★ ทั้ง 5 ข้อ โดยให้ผู้เชี่ยวชาญประเมินความปลอดภัยตามภารกิจ</p>';
-     const tabs=document.createElement('div');tabs.className='medical-step-tabs';tabs.setAttribute('role','group');tabs.setAttribute('aria-label','เลือกขั้นตอนการตรวจร่างกาย');
-     const panels=[];let activeStep=0;
+     const panels=[]; // แสดงทั้ง 4 ขั้นตอนเรียงต่อกันในหน้าเดียว
      const score=document.createElement('p');score.className='muted';score.setAttribute('aria-live','polite');
      const passAll=document.createElement('button');passAll.type='button';passAll.className='ghost medical-small-action';passAll.textContent='✓ ผ่านทั้งหมด 20 ข้อ';
      passAll.onclick=()=>{MEDICAL_CHECKS.forEach((_,i)=>{const r=section.querySelector(`input[data-medical="${i}"][value="ผ่าน"]`);if(r)r.checked=true;});calculate();};
-     const topActions=document.createElement('div');topActions.className='medical-top-actions';topActions.append(passAll);section.append(topActions,tabs);
+     const topActions=document.createElement('div');topActions.className='medical-top-actions';topActions.append(passAll);section.append(topActions);
      MEDICAL_STAGES.forEach((stage,s)=>{
-       const tab=document.createElement('button');tab.type='button';tab.className='ghost medical-step-tab';tab.setAttribute('aria-label',`ขั้นตอนที่ ${s+1} ${stage.title}`);tab.onclick=()=>showStep(s);tabs.append(tab);
-       const panel=document.createElement('div');panel.className='medical-step-panel';panel.hidden=s!==0;
+       const panel=document.createElement('div');panel.className='medical-step-panel';
        const heading=document.createElement('h4');heading.textContent=`ขั้นตอนที่ ${s+1} ${stage.title}`;panel.append(heading);
        const stageActions=document.createElement('div');stageActions.className='medical-top-actions';
        const passStep=document.createElement('button');passStep.type='button';passStep.className='ghost medical-small-action';passStep.textContent=`✓ ผ่านทั้งหมดขั้นตอนที่ ${s+1}`;
@@ -1457,15 +1466,10 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        }
        panels.push(panel);section.append(panel);
      });
-     const nav=document.createElement('div');nav.className='medical-step-navigation';
-     const back=document.createElement('button');back.type='button';back.className='ghost';back.textContent='← ย้อนกลับ';back.onclick=()=>showStep(activeStep-1);
-     const next=document.createElement('button');next.type='button';next.className='orange';next.textContent='ขั้นตอนถัดไป →';next.onclick=()=>showStep(activeStep+1);
-     nav.append(back,next);section.append(nav);
-     function showStep(index){activeStep=Math.max(0,Math.min(index,MEDICAL_STAGES.length-1));panels.forEach((p,i)=>p.hidden=i!==activeStep);back.disabled=activeStep===0;next.disabled=activeStep===MEDICAL_STAGES.length-1;calculate();}
      function calculate(){let passed=0,answered=0,pending=0;MEDICAL_CHECKS.forEach((_,i)=>{const v=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(v){answered++;if(v==='ผ่าน')passed++;if(v==='ตรวจเพิ่มเติม')pending++;}});
        const requiredOk=MEDICAL_MANDATORY.every(i=>section.querySelector(`input[data-medical="${i}"]:checked`)?.value==='ผ่าน');
        score.textContent=`ผ่าน ${passed}/20 • ตรวจแล้ว ${answered}/20 • รอตรวจเพิ่มเติม ${pending} ข้อ • ${answered!==20?'ยังตรวจไม่ครบ':pending?'ส่งเข้าหน้ารอตรวจเพิ่มเติม':passed>=14&&requiredOk?'ผ่านเกณฑ์':'ไม่ผ่านเกณฑ์'} • ★ บังคับผ่าน 5 ข้อ`;
-       MEDICAL_STAGES.forEach((stage,i)=>{const done=Array.from({length:stage.end-stage.start},(_,j)=>section.querySelector(`input[data-medical="${stage.start+j}"]:checked`)).filter(Boolean).length;tabs.children[i].textContent=`${i+1}. ${stage.title} (${done}/${stage.end-stage.start})`;tabs.children[i].classList.toggle('medical-step-active',i===activeStep);tabs.children[i].setAttribute('aria-pressed',String(i===activeStep));});
+       MEDICAL_STAGES.forEach((stage,i)=>{const done=Array.from({length:stage.end-stage.start},(_,j)=>section.querySelector(`input[data-medical="${stage.start+j}"]:checked`)).filter(Boolean).length;panels[i].querySelector('h4').textContent=`ขั้นตอนที่ ${i+1} ${stage.title} (${done}/${stage.end-stage.start})`;});
      }
      section.addEventListener('change',calculate);
      const note=document.createElement('textarea');note.rows=3;note.placeholder='ชื่อผู้ประเมิน วันตรวจ และข้อสังเกตที่จำเป็น';note.value=record.MedicalNote||'';
@@ -1479,7 +1483,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        if(!note.value.trim())return crpNotice('กรุณาระบุผู้ประเมินและรายละเอียดการตรวจ');
        button.disabled=true;try{const result=await api('saveMedicalReview',{applicationId:record.ApplicationID,checks,note:note.value.trim()});closeModal();await refreshCurrentTab();msg(result.pendingCount ? `บันทึกแล้ว ส่งตรวจเพิ่มเติม ${result.pendingCount} ข้อ — ไปที่เมนูรอตรวจเพิ่มเติม` : `บันทึกผลตรวจร่างกาย ${result.percent}% — ${result.status}`);}catch(e){}finally{button.disabled=false;}
      };
-     section.append(label,quick,note,score,button);showStep(0);$('modalBody').append(section);
+     section.append(label,quick,note,score,button);calculate();$('modalBody').append(section);
    }
 
    /** เฉพาะผลที่บันทึกว่า 'ตรวจเพิ่มเติม' เท่านั้นจึงจะมีปุ่มแก้ไขได้ */
