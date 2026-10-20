@@ -166,13 +166,7 @@ document.querySelectorAll('[data-public-tab]').forEach(button=>{
 });
 showPublicSection('processSection');
 const API_URL = "https://script.google.com/macros/s/AKfycbwVQTb4kDCrGbg9OY7a9sio7IRl08-2Ag8EmOkkw_jBv3V6S3-WytWJXH2N5IR_pHGl/exec";
-const CRP_DIRECT_URL = API_URL + '?page=public';
-// Safari / Chrome บนมือถืออาจปิดกั้น iframe ข้ามโดเมน; ใช้หน้า Google Apps Script ตรงแทน
-const crpMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-if (crpMobile && !new URLSearchParams(location.search).has('stayGithub')) {
-  location.replace(CRP_DIRECT_URL);
-}
+// Keep GitHub Pages on all devices; use direct GAS only as an optional fallback.
 const bridgeChannel = (typeof crypto !== 'undefined' && crypto.getRandomValues)
   ? Array.from(crypto.getRandomValues(new Uint8Array(20)), b => b.toString(16).padStart(2, '0')).join('')
   : Array.from({length:5}, () => Math.random().toString(36).slice(2)).join('').slice(0,40);
@@ -219,7 +213,7 @@ async function callServer(action,payload={}) {
     const timer=setTimeout(()=>{
       finished=true;
       const i=readyWaiters.indexOf(onReady); if(i!==-1)readyWaiters.splice(i,1);
-      reject(new Error('เชื่อมต่อ Apps Script ไม่สำเร็จ: เปิดหน้าเว็บผ่าน Apps Script โดยตรง หรือตรวจสอบ Deploy และ CRP_GITHUB_ORIGIN'));
+      reject(new Error('เชื่อมต่อข้อมูลไม่สำเร็จ กรุณาตรวจสอบการ Deploy ของ Apps Script และการอนุญาต iframe'));
     },30000);
     readyWaiters.push(onReady);
     if(bridgeReady)onReady();
@@ -229,21 +223,14 @@ async function callServer(action,payload={}) {
       ? crypto.randomUUID() : String(Date.now())+Math.random();
     const timer=setTimeout(()=>{
       pending.delete(id);
-      reject(new Error('เซิร์ฟเวอร์ตอบกลับช้าเกินไป กรุณาเปิดผ่าน Apps Script โดยตรง'));
+      reject(new Error('เซิร์ฟเวอร์ตอบกลับช้าเกินไป กรุณาลองโหลดหน้า GitHub Pages ใหม่'));
     },90000);
     pending.set(id,{resolve,reject,timer});
     try { bridgeWindow.postMessage({crp:'request',channel:bridgeChannel,id,action,payload},bridgeOrigin); }
     catch(error) { clearTimeout(timer);pending.delete(id);reject(error); }
   });
 }
-function crpShowDirectLink(element) {
-  if(!element || element.querySelector('.crp-direct-link'))return;
-  const a=document.createElement('a');
-  a.className='crp-direct-link'; a.href=CRP_DIRECT_URL; a.target='_blank'; a.rel='noopener';
-  a.textContent='เปิดเว็บไซต์ผ่าน Google Apps Script โดยตรง ↗';
-  a.style.cssText='display:inline-block;margin-top:8px;color:#4655b5;font-weight:700';
-  element.append(document.createElement('br'),a);
-}
+function crpShowDirectLink(element) { /* GitHub Pages only: no alternate page link */ }
 const CRP_API={call:callServer};function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}const $=id=>document.getElementById(id);let items=[];
 let publicBusy = false;
 let lastResultsKey = '';
@@ -329,12 +316,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) {sea
 async function show(id){$('overlay').classList.remove('hidden');$('details').textContent='กำลังโหลด...';try{const x=await CRP_API.call('publicDetails',{applicationId:id});$('details').innerHTML=`<dl><dt>รหัสผู้สมัคร</dt><dd>${esc(x.applicationId)}</dd><dt>ชื่อ-นามสกุล</dt><dd>${esc(x.fullName)}</dd><dt>จังหวัด</dt><dd>${esc(x.province||'-')}</dd><dt>ระดับการศึกษา</dt><dd>${esc(x.education||'-')}</dd><dt>การลงทะเบียน</dt><dd>${esc(x.registration)}</dd><dt>ผลตรวจสอบคุณสมบัติ</dt><dd>${esc(x.reviewStatus||'รอตรวจสอบ')}</dd><dt>ขั้นตอนตรวจร่างกาย</dt><dd>${esc(x.medicalStatus||'ยังไม่ถึงขั้นตอน')}</dd><dt>คะแนนตรวจร่างกาย</dt><dd>${esc(x.medicalScore||'ยังไม่มีผล')}</dd><dt>กลุ่มฝึก</dt><dd>${esc(x.trainingGroup||'ยังไม่ได้จัดกลุ่ม')}</dd><dt>สถานะล่าสุด</dt><dd><span class="pill" data-status="${esc(x.status)}">${esc(x.status)}</span></dd></dl>`;}catch(e){$('details').textContent=e.message;}}
 $('searchForm').onsubmit=e=>{e.preventDefault();search();};$('close').onclick=()=>$('overlay').classList.add('hidden');$('overlay').onclick=e=>{if(e.target===$('overlay'))$('close').click();};search();loadTraining();loadPublicSummary();
 </script>
-<script>
-if (window.google && google.script && google.script.run) {
-  document.querySelectorAll('a[href="./index.html"]').forEach(a=>a.href='?page=public');
-  document.querySelectorAll('a[href="./admin.html"]').forEach(a=>a.href='?page=admin');
-}
-</script>
+
 
 <script id="crp-keyboard-shortcuts">
 (function(){
