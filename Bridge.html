@@ -1,6 +1,0 @@
-<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>CRP Connector</title></head><body><script>
-(function(){'use strict';const allowedOrigin=<?!= JSON.stringify(allowedOrigin) ?>;const channel=<?!= JSON.stringify(channel) ?>;
-const actions=new Set(['ping','publicSearch','publicDetails','login','logout','getApplications','getApplication','addApplication','updateApplication','saveReview','setApplicationStatus','saveMedicalReview','saveExpertMedicalReview','rejectMedicalSafety','saveTrainingGroup','publicTrainingSelected','publicSummary','getSummary','getConfig']);
-function send(data){window.top.postMessage(Object.assign({channel:channel},data),allowedOrigin)}
-window.addEventListener('message',function(event){if(event.source!==window.top||event.origin!==allowedOrigin)return;const m=event.data;if(!m||m.crp!=='request'||m.channel!==channel||typeof m.id!=='string'||typeof m.action!=='string')return;if(!actions.has(m.action)){send({crp:'response',id:m.id,ok:false,message:'Method not allowed'});return}try{google.script.run.withSuccessHandler(d=>send({crp:'response',id:m.id,ok:true,data:d})).withFailureHandler(e=>send({crp:'response',id:m.id,ok:false,message:e&&e.message||String(e)})).apiRequest(m.action,m.payload||{})}catch(e){send({crp:'response',id:m.id,ok:false,message:String(e)})}});send({crp:'ready'})})();
-</script></body></html>
