@@ -156,7 +156,7 @@ button, .btn { font-size: 17px; line-height: 1.45; }
 .pill[data-status="ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)"]{background:#ffe0de;color:#9b2930;border:1px solid #edaba8}
 .pill[data-status="รอตรวจร่างกาย"]{background:#e5edff;color:#254eaa;border:1px solid #a9c3ff}
 .pill[data-status="ผ่านการคัดเลือกเข้ารับการฝึก"]{background:#d9f6e6;color:#126c43;border:1px solid #8ad4a8}
-.pill[data-status="ไม่ผ่านการตรวจร่างกาย"]{background:#ffe1e1;color:#a52332;border:1px solid #f2aab0}
+.pill[data-status="ไม่อนุมัติให้เข้ารับการฝึก"],.pill[data-status="ไม่ผ่านการตรวจร่างกาย"]{background:#ffe1e1;color:#a52332;border:1px solid #f2aab0}
 
 /* Nine navigation buttons in a balanced 3 x 3 layout. */
 @media (max-width: 600px) { .tabs button { font-size: 12px; } }
@@ -794,7 +794,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    </script>
   <script>
    const $ = id => document.getElementById(id);
-   const STATUS = ['รอตรวจสอบ', 'ไม่ผ่านการตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก', 'ผ่านการคัดเลือก (กรณีพิเศษ)', 'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)', 'รอเลือกกลุ่มฝึก', 'รอตรวจร่างกาย', 'รอตรวจเพิ่มเติม', 'ไม่ผ่านการตรวจร่างกาย', 'ผ่านการคัดเลือกเข้ารับการฝึก'];
+   const STATUS = ['รอตรวจสอบ', 'ไม่ผ่านการตรวจสอบ', 'อยู่ระหว่างพิจารณา', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก', 'ผ่านการคัดเลือก (กรณีพิเศษ)', 'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)', 'รอเลือกกลุ่มฝึก', 'รอตรวจร่างกาย', 'รอตรวจเพิ่มเติม', 'ไม่ผ่านการตรวจร่างกาย', 'ไม่อนุมัติให้เข้ารับการฝึก', 'ผ่านการคัดเลือกเข้ารับการฝึก'];
    const CHECKS = [
      'มีอายุตามกำหนด',
      'ไม่เป็นผู้ดำรงตำแหน่งทางการเมือง', 'ไม่เป็นบุคคลล้มละลาย',
@@ -887,12 +887,13 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        setApplicationStatus:'กำลังบันทึกผลอนุมัติ...',
        saveTrainingGroup:'กำลังบันทึกกลุ่มฝึก...',
        saveMedicalReview:'กำลังบันทึกผลตรวจร่างกาย...',
-       saveExpertMedicalReview:'กำลังบันทึกผลตรวจเพิ่มเติม...'
+       saveExpertMedicalReview:'กำลังบันทึกผลตรวจเพิ่มเติม...',
+       rejectMedicalSafety:'กำลังบันทึกคำสั่งไม่อนุมัติให้เข้าฝึก...'
      })[action]||'กำลังบันทึกข้อมูล กรุณารอสักครู่...';
      crpNoticeOk.classList.add('hidden');
      crpNoticeLayer.classList.remove('hidden');
    }
-   const CRP_WRITE_ACTIONS=new Set(['addApplication','updateApplication','saveReview','setApplicationStatus','saveTrainingGroup','saveMedicalReview','saveExpertMedicalReview']);
+   const CRP_WRITE_ACTIONS=new Set(['addApplication','updateApplication','saveReview','setApplicationStatus','saveTrainingGroup','saveMedicalReview','saveExpertMedicalReview','rejectMedicalSafety']);
    async function api(action,payload={}) {
      const writing=CRP_WRITE_ACTIONS.has(action);
      if(writing) crpBusyStart(action);
@@ -955,7 +956,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    $('birthDate').addEventListener('change', updateAge);$('birthDate').max = new Date().toISOString().slice(0, 10);
 
    function stageOf(record) {
-     if (['รอเลือกกลุ่มฝึก', 'รอตรวจร่างกาย', 'รอตรวจเพิ่มเติม', 'ไม่ผ่านการตรวจร่างกาย', 'ผ่านการคัดเลือกเข้ารับการฝึก', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก', 'ผ่านการคัดเลือก (กรณีพิเศษ)', 'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)'].includes(record.Status)) return record.Status;
+     if (['รอเลือกกลุ่มฝึก', 'รอตรวจร่างกาย', 'รอตรวจเพิ่มเติม', 'ไม่ผ่านการตรวจร่างกาย', 'ไม่อนุมัติให้เข้ารับการฝึก', 'ผ่านการคัดเลือกเข้ารับการฝึก', 'ผ่านการคัดเลือก', 'ไม่ผ่านการคัดเลือก', 'ผ่านการคัดเลือก (กรณีพิเศษ)', 'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)'].includes(record.Status)) return record.Status;
      if (record.ReviewStatus === 'ไม่ผ่านการตรวจสอบ') return 'ไม่ผ่านการตรวจสอบ';
      return record.ReviewStatus === 'ตรวจสอบแล้ว' ? 'รอการอนุมัติ' : 'รอตรวจสอบข้อมูล';
    }
@@ -1460,7 +1461,8 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    const REJECTED_STATUSES = new Set([
      'ไม่ผ่านการคัดเลือก',
      'ไม่ผ่านการคัดเลือก (ไม่ผ่านคุณสมบัติ)',
-     'ไม่ผ่านการตรวจร่างกาย'
+     'ไม่ผ่านการตรวจร่างกาย',
+     'ไม่อนุมัติให้เข้ารับการฝึก'
    ]);
    async function loadRejected() {
      try {
@@ -1492,6 +1494,28 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      field.dispatchEvent(new Event('input', { bubbles: true }));
      field.focus();
      field.setSelectionRange(field.value.length, field.value.length);
+   }
+   function attachMedicalSafetyReject(section, record, stage, collectChecks) {
+     const wrapper=document.createElement('div');wrapper.className='medical-safety-box';
+     const explanation=document.createElement('p');explanation.className='medical-safety-description';
+     explanation.textContent='ใช้เฉพาะกรณีที่มีอย่างน้อย 1 รายการประเมินว่า “ไม่ผ่าน” และผู้ประเมินเห็นว่าการเข้าฝึกอาจเป็นอันตราย ไม่จำเป็นต้องรอผลครบ 20 รายการ';
+     const reason=document.createElement('textarea');reason.rows=3;reason.maxLength=1400;
+     reason.placeholder='ระบุหัวข้อที่มีความเสี่ยง เหตุผลด้านความปลอดภัย และชื่อผู้ประเมิน';
+     const label=document.createElement('label');label.textContent='เหตุผลการไม่อนุมัติ (บังคับ)';
+     const button=document.createElement('button');button.type='button';button.className='medical-safety-button';
+     button.textContent='✕ ไม่อนุมัติให้เข้ารับการฝึก (เสี่ยงอันตราย)';button.disabled=true;
+     const update=()=>{const checks=collectChecks();button.disabled=!Object.values(checks).includes('ไม่ผ่าน');};
+     section.addEventListener('change',update);
+     button.onclick=async()=>{
+       const checks=collectChecks();
+       if(!Object.values(checks).includes('ไม่ผ่าน'))return crpNotice('ต้องมีผลตรวจ “ไม่ผ่าน” อย่างน้อย 1 รายการ');
+       if(reason.value.trim().length<10)return crpNotice('กรุณาระบุเหตุผลด้านความปลอดภัยอย่างน้อย 10 ตัวอักษร');
+       if(!window.confirm('ยืนยันไม่อนุมัติให้ผู้สมัครรายนี้เข้ารับการฝึก เนื่องจากความเสี่ยงต่อสุขภาพหรือความปลอดภัย?'))return;
+       button.disabled=true;
+       try{const result=await api('rejectMedicalSafety',{applicationId:record.ApplicationID,stage,checks,reason:reason.value.trim()});closeModal();await refreshCurrentTab();msg(result.status+' — บันทึกเหตุผลและยุติกระบวนการตรวจแล้ว');}
+       catch(error){update();}
+     };
+     wrapper.append(explanation,label,reason,button);section.append(wrapper);update();
    }
    function renderMedical(record) {
      const section=document.createElement('section'); section.className='card medical-wizard';
@@ -1534,7 +1558,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        if(!note.value.trim())return crpNotice('กรุณาระบุผู้ประเมินและรายละเอียดการตรวจ');
        button.disabled=true;try{const result=await api('saveMedicalReview',{applicationId:record.ApplicationID,checks,note:note.value.trim()});closeModal();await refreshCurrentTab();msg(result.pendingCount ? `บันทึกแล้ว ส่งตรวจเพิ่มเติม ${result.pendingCount} ข้อ — ไปที่เมนูรอตรวจเพิ่มเติม` : `บันทึกผลตรวจร่างกาย ${result.percent}% — ${result.status}`);}catch(e){}finally{button.disabled=false;}
      };
-     section.append(label,quick,note,score,button);calculate();$('modalBody').append(section);
+     section.append(label,quick,note,score,button);attachMedicalSafetyReject(section,record,'medical',()=>{const checks={};MEDICAL_CHECKS.forEach((name,i)=>{const value=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(value)checks[name]=value;});return checks;});calculate();$('modalBody').append(section);
    }
 
    /** เฉพาะผลที่บันทึกว่า 'ตรวจเพิ่มเติม' เท่านั้นจึงจะมีปุ่มแก้ไขได้ */
@@ -1574,7 +1598,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
          msg(`บันทึกผลตรวจเพิ่มเติม ${result.resolvedCount} ข้อ — คะแนนรวม ${result.percent}% — ${result.status}`);
        }catch(error){}finally{button.disabled=false;}
      };
-     section.append(label,quick,note,button);$('modalBody').append(section);
+     section.append(label,quick,note,button);attachMedicalSafetyReject(section,record,'medicalExtra',()=>{const checks={};for(const {name,index} of pending){const value=section.querySelector(`input[data-expert-medical="${index}"]:checked`)?.value;if(value)checks[name]=value;}return checks;});$('modalBody').append(section);
    }
 
    async function showTrainingGroupPicker(applicationId, currentGroup = '', applicantRecord = null) {
