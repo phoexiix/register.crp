@@ -1543,15 +1543,15 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        MEDICAL_STAGES.forEach((stage,i)=>{const done=Array.from({length:stage.end-stage.start},(_,j)=>section.querySelector(`input[data-medical="${stage.start+j}"]:checked`)).filter(Boolean).length;panels[i].querySelector('h4').textContent=`ขั้นตอนที่ ${i+1} ${stage.title} (${done}/${stage.end-stage.start})`;});
      }
      section.addEventListener('change',calculate);
-     const note=document.createElement('textarea');note.rows=3;note.placeholder='ชื่อผู้ประเมิน วันตรวจ และข้อสังเกตที่จำเป็น';note.value=record.MedicalNote||'';
-     const label=document.createElement('label');label.textContent='ผู้ประเมินและรายละเอียดการตรวจ (สำหรับการไม่อนุมัติ ไม่บังคับกรอก)';
+     const note=document.createElement('textarea');note.rows=3;note.placeholder='ไม่จำเป็นต้องกรอก สามารถเว้นว่างได้';note.value=record.MedicalNote||'';
+     const label=document.createElement('label');label.textContent='ผู้ประเมินและรายละเอียดการตรวจ (ไม่บังคับกรอก)';
      const quick=document.createElement('div');quick.className='decision-quick-reasons medical-quick-reasons';quick.setAttribute('role','group');quick.setAttribute('aria-label','ข้อความผลตรวจร่างกายสำเร็จรูป');
      quick.innerHTML='<span class="decision-quick-title">ข้อความสำเร็จรูป</span>'+['ผ่านการตรวจสอบ','ไม่ผ่านการตรวจสอบ','ไม่เข้ารับการตรวจร่างกาย','ไม่ระบุ'].map(t=>`<button type="button" class="ghost decision-quick-button" data-medical-reason="${t}">${t}</button>`).join('');
      quick.querySelectorAll('[data-medical-reason]').forEach(b=>b.onclick=()=>appendQuickText(note,b.dataset.medicalReason));
      const button=document.createElement('button');button.type='button';button.className='orange';button.textContent='บันทึกผลตรวจร่างกาย';
      button.onclick=async()=>{const checks={};MEDICAL_CHECKS.forEach((name,i)=>checks[name]=section.querySelector(`input[data-medical="${i}"]:checked`)?.value||'');
        if(Object.values(checks).some(v=>!v))return crpNotice('กรุณาเลือกผลตรวจร่างกายให้ครบทั้ง 20 ข้อ');
-       if(!note.value.trim())return crpNotice('กรุณาระบุผู้ประเมินและรายละเอียดการตรวจ');
+       
        button.disabled=true;try{const result=await api('saveMedicalReview',{applicationId:record.ApplicationID,checks,note:note.value.trim()});closeModal();await refreshCurrentTab();msg(result.pendingCount ? `บันทึกแล้ว ส่งตรวจเพิ่มเติม ${result.pendingCount} ข้อ — ไปที่เมนูรอตรวจเพิ่มเติม` : `บันทึกผลตรวจร่างกาย ${result.percent}% — ${result.status}`);}catch(e){}finally{button.disabled=false;}
      };
      section.append(label,quick,note,score,button);attachMedicalSafetyReject(section,record,'medical',()=>{const checks={};MEDICAL_CHECKS.forEach((name,i)=>{const value=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(value)checks[name]=value;});return checks;},note,button);calculate();$('modalBody').append(section);
@@ -1575,8 +1575,8 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
         <div class="review-choice-group" role="radiogroup" aria-label="ผลตรวจเพิ่มเติม ${esc(name)}">${['ผ่าน','ไม่ผ่าน'].map(value=>`<label class="review-choice ${value==='ผ่าน'?'review-choice--pass':'review-choice--fail'}"><input type="radio" name="expertMedical${index}" data-expert-medical="${index}" value="${value}"><span>${value==='ผ่าน'?'✓ ผ่าน':'✕ ไม่ผ่าน'}</span></label>`).join('')}</div>`;
        section.append(row);
      }
-     const label=document.createElement('label');label.textContent='แพทย์ผู้เชี่ยวชาญและรายละเอียดผลตรวจเพิ่มเติม (สำหรับการไม่อนุมัติ ไม่บังคับกรอก)';
-     const note=document.createElement('textarea');note.rows=3;note.maxLength=1600;note.placeholder='ชื่อผู้ตรวจ วันที่ตรวจ และข้อสังเกตของผลตรวจเพิ่มเติม';
+     const label=document.createElement('label');label.textContent='แพทย์ผู้เชี่ยวชาญและรายละเอียดผลตรวจเพิ่มเติม (ไม่บังคับกรอก)';
+     const note=document.createElement('textarea');note.rows=3;note.maxLength=1600;note.placeholder='ไม่จำเป็นต้องกรอก สามารถเว้นว่างได้';
      // ใช้ปุ่มข้อความสำเร็จรูปชุดเดียวกับหน้าตรวจร่างกายปกติ (กดแล้วเติมลงช่องรายละเอียด)
      const quick=document.createElement('div');quick.className='decision-quick-reasons medical-quick-reasons';
      quick.setAttribute('role','group');quick.setAttribute('aria-label','ข้อความผลตรวจเพิ่มเติมสำเร็จรูป');
@@ -1586,7 +1586,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      button.onclick=async()=>{
        const checks={};for(const {name,index} of pending){checks[name]=section.querySelector(`input[data-expert-medical="${index}"]:checked`)?.value||'';}
        if(Object.values(checks).some(v=>!v))return crpNotice('กรุณาเลือกว่า ผ่าน หรือ ไม่ผ่าน ให้ครบเฉพาะหัวข้อที่ส่งตรวจเพิ่มเติม');
-       if(!note.value.trim())return crpNotice('กรุณาระบุแพทย์ผู้เชี่ยวชาญและรายละเอียดผลตรวจ');
+       
        button.disabled=true;
        try{
          const result=await api('saveExpertMedicalReview',{applicationId:record.ApplicationID,checks,note:note.value.trim()});
