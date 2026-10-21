@@ -240,6 +240,7 @@ button, .btn { font-size: 17px; line-height: 1.45; }
   .medical-wizard .medical-small-action{font-size:12px!important;min-height:28px!important;padding:4px 8px!important}
   @media(max-width:800px){.medical-wizard .review-row{grid-template-columns:minmax(0,1fr)}.medical-wizard .review-choice-group{justify-content:flex-start;width:auto}}
   @media(max-width:480px){.medical-wizard .medical-step-panel{padding:9px 10px}.medical-wizard .review-question{font-size:16px}.medical-wizard .medical-description{font-size:14px}.medical-wizard .review-choice{font-size:11.5px;padding:4px 6px}}
+ .crp-notice-actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}.crp-notice-actions button{min-width:110px}
  .medical-safety-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}.medical-safety-actions button{width:auto;max-width:100%}.medical-safety-button{background:#b52f42;color:#fff}.medical-safety-button:disabled{opacity:.45;cursor:not-allowed}
 </style>
  
@@ -716,7 +717,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
       <div id="crpNoticeIcon" class="crp-notice-icon">✓</div>
       <h3 id="crpNoticeTitle">แจ้งเตือน</h3>
       <p id="crpNoticeText"></p>
-      <button id="crpNoticeOk" type="button">ตกลง</button>
+      <div class="crp-notice-actions"><button id="crpNoticeCancel" class="ghost hidden" type="button">ยกเลิก</button><button id="crpNoticeOk" type="button">ตกลง</button></div>
     </div>
   </div>
   <footer>
@@ -846,6 +847,9 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    const crpNoticeTitle = $('crpNoticeTitle');
    const crpNoticeText = $('crpNoticeText');
    const crpNoticeOk = $('crpNoticeOk');
+   const crpNoticeCancel = $('crpNoticeCancel');
+   let crpConfirmResolve=null;
+   function crpResolveConfirmation(value){if(crpConfirmResolve){const resolve=crpConfirmResolve;crpConfirmResolve=null;crpNoticeCancel.classList.add('hidden');crpNoticeOk.textContent='ตกลง';crpHideNotice();resolve(value);}}
    let crpNoticeTimer = null;
    let crpActiveWrites = 0;
    let crpNoticeSequence = 0;
@@ -858,6 +862,9 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      if (crpActiveWrites) return;
      clearTimeout(crpNoticeTimer);
      const seq=++crpNoticeSequence;
+     if(crpConfirmResolve)crpResolveConfirmation(false);
+     crpNoticeCancel.classList.add('hidden');
+     crpNoticeOk.textContent='ตกลง';
      crpNoticeLayer.dataset.kind=kind;
      crpNoticeIcon.replaceChildren();
      crpNoticeIcon.textContent=kind==='error' ? '!' : kind==='success' ? '✓' : 'i';
@@ -870,7 +877,25 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        if(seq===crpNoticeSequence && !crpActiveWrites) crpHideNotice();
      },1800);
    }
-   crpNoticeOk.onclick=crpHideNotice;
+   crpNoticeOk.onclick=()=>{if(crpConfirmResolve)crpResolveConfirmation(true);else crpHideNotice();};
+   crpNoticeCancel.onclick=()=>crpResolveConfirmation(false);
+   function crpConfirm(message,title='ยืนยันการดำเนินการ'){
+     if(crpActiveWrites)return Promise.resolve(false);
+     clearTimeout(crpNoticeTimer);
+     if(crpConfirmResolve)crpResolveConfirmation(false);
+     return new Promise(resolve=>{
+       crpConfirmResolve=resolve;
+       crpNoticeLayer.dataset.kind='confirm';
+       crpNoticeIcon.replaceChildren();crpNoticeIcon.textContent='?';
+       crpNoticeTitle.textContent=title;
+       crpNoticeText.textContent=String(message||'');
+       crpNoticeOk.textContent='ยืนยัน';
+       crpNoticeOk.classList.remove('hidden');
+       crpNoticeCancel.classList.remove('hidden');
+       crpNoticeLayer.classList.remove('hidden');
+       crpNoticeCancel.focus({preventScroll:true});
+     });
+   }
    function crpBusyStart(action) {
      crpActiveWrites++;
      clearTimeout(crpNoticeTimer);
@@ -1506,7 +1531,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      button.onclick=async()=>{
        const checks=collectChecks();
        if(!Object.values(checks).includes('ไม่ผ่าน'))return crpNotice('ต้องมีผลตรวจ “ไม่ผ่าน” อย่างน้อย 1 รายการ');
-       if(!window.confirm('ยืนยันไม่อนุมัติให้ผู้สมัครรายนี้เข้ารับการฝึก เนื่องจากความเสี่ยงต่อสุขภาพหรือความปลอดภัย?'))return;
+       if(!await crpConfirm('ยืนยันไม่อนุมัติให้ผู้สมัครรายนี้เข้ารับการฝึก เนื่องจากความเสี่ยงต่อสุขภาพหรือความปลอดภัย?'))return;
        button.disabled=true;
        try{const result=await api('rejectMedicalSafety',{applicationId:record.ApplicationID,stage,checks,reason:note.value.trim()});closeModal();await refreshCurrentTab();msg(result.status+' — ยุติกระบวนการตรวจแล้ว');}
        catch(error){update();}
@@ -1818,7 +1843,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
    const active=dialogTop();
    if(event.key==='Escape'){
      if(active===layer){
-       const noticeButton=layer.querySelector('#crpNoticeOk');
+       const noticeButton=layer.querySelector('#crpNoticeCancel:not(.hidden)')||layer.querySelector('#crpNoticeOk');
        if(noticeButton && !noticeButton.classList.contains('hidden') && !noticeButton.disabled){event.preventDefault();noticeButton.click();}
        return;
      }
