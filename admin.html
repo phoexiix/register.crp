@@ -240,6 +240,7 @@ button, .btn { font-size: 17px; line-height: 1.45; }
   .medical-wizard .medical-small-action{font-size:12px!important;min-height:28px!important;padding:4px 8px!important}
   @media(max-width:800px){.medical-wizard .review-row{grid-template-columns:minmax(0,1fr)}.medical-wizard .review-choice-group{justify-content:flex-start;width:auto}}
   @media(max-width:480px){.medical-wizard .medical-step-panel{padding:9px 10px}.medical-wizard .review-question{font-size:16px}.medical-wizard .medical-description{font-size:14px}.medical-wizard .review-choice{font-size:11.5px;padding:4px 6px}}
+ .medical-safety-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}.medical-safety-actions button{width:auto;max-width:100%}.medical-safety-button{background:#b52f42;color:#fff}.medical-safety-button:disabled{opacity:.45;cursor:not-allowed}
 </style>
  
 <style id="crp-responsive-fix">
@@ -1495,27 +1496,22 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      field.focus();
      field.setSelectionRange(field.value.length, field.value.length);
    }
-   function attachMedicalSafetyReject(section, record, stage, collectChecks) {
-     const wrapper=document.createElement('div');wrapper.className='medical-safety-box';
-     const explanation=document.createElement('p');explanation.className='medical-safety-description';
-     explanation.textContent='ใช้เฉพาะกรณีที่มีอย่างน้อย 1 รายการประเมินว่า “ไม่ผ่าน” และผู้ประเมินเห็นว่าการเข้าฝึกอาจเป็นอันตราย ไม่จำเป็นต้องรอผลครบ 20 รายการ';
-     const reason=document.createElement('textarea');reason.rows=3;reason.maxLength=1400;
-     reason.placeholder='ระบุหัวข้อที่มีความเสี่ยง เหตุผลด้านความปลอดภัย และชื่อผู้ประเมิน';
-     const label=document.createElement('label');label.textContent='เหตุผลการไม่อนุมัติ (บังคับ)';
+   function attachMedicalSafetyReject(section, record, stage, collectChecks, note, normalButton) {
      const button=document.createElement('button');button.type='button';button.className='medical-safety-button';
-     button.textContent='✕ ไม่อนุมัติให้เข้ารับการฝึก (เสี่ยงอันตราย)';button.disabled=true;
-     const update=()=>{const checks=collectChecks();button.disabled=!Object.values(checks).includes('ไม่ผ่าน');};
+     button.textContent='✕ ไม่อนุมัติให้เข้ารับการฝึก (เสี่ยงอันตราย)';
+     const actions=document.createElement('div');actions.className='medical-safety-actions';
+     normalButton.replaceWith(actions);actions.append(normalButton,button);
+     const update=()=>{button.disabled=!Object.values(collectChecks()).includes('ไม่ผ่าน');};
      section.addEventListener('change',update);
      button.onclick=async()=>{
        const checks=collectChecks();
        if(!Object.values(checks).includes('ไม่ผ่าน'))return crpNotice('ต้องมีผลตรวจ “ไม่ผ่าน” อย่างน้อย 1 รายการ');
-       if(reason.value.trim().length<10)return crpNotice('กรุณาระบุเหตุผลด้านความปลอดภัยอย่างน้อย 10 ตัวอักษร');
        if(!window.confirm('ยืนยันไม่อนุมัติให้ผู้สมัครรายนี้เข้ารับการฝึก เนื่องจากความเสี่ยงต่อสุขภาพหรือความปลอดภัย?'))return;
        button.disabled=true;
-       try{const result=await api('rejectMedicalSafety',{applicationId:record.ApplicationID,stage,checks,reason:reason.value.trim()});closeModal();await refreshCurrentTab();msg(result.status+' — บันทึกเหตุผลและยุติกระบวนการตรวจแล้ว');}
+       try{const result=await api('rejectMedicalSafety',{applicationId:record.ApplicationID,stage,checks,reason:note.value.trim()});closeModal();await refreshCurrentTab();msg(result.status+' — ยุติกระบวนการตรวจแล้ว');}
        catch(error){update();}
      };
-     wrapper.append(explanation,label,reason,button);section.append(wrapper);update();
+     update();
    }
    function renderMedical(record) {
      const section=document.createElement('section'); section.className='card medical-wizard';
@@ -1548,7 +1544,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
      }
      section.addEventListener('change',calculate);
      const note=document.createElement('textarea');note.rows=3;note.placeholder='ชื่อผู้ประเมิน วันตรวจ และข้อสังเกตที่จำเป็น';note.value=record.MedicalNote||'';
-     const label=document.createElement('label');label.textContent='ผู้ประเมินและรายละเอียดการตรวจ *';
+     const label=document.createElement('label');label.textContent='ผู้ประเมินและรายละเอียดการตรวจ (สำหรับการไม่อนุมัติ ไม่บังคับกรอก)';
      const quick=document.createElement('div');quick.className='decision-quick-reasons medical-quick-reasons';quick.setAttribute('role','group');quick.setAttribute('aria-label','ข้อความผลตรวจร่างกายสำเร็จรูป');
      quick.innerHTML='<span class="decision-quick-title">ข้อความสำเร็จรูป</span>'+['ผ่านการตรวจสอบ','ไม่ผ่านการตรวจสอบ','ไม่เข้ารับการตรวจร่างกาย','ไม่ระบุ'].map(t=>`<button type="button" class="ghost decision-quick-button" data-medical-reason="${t}">${t}</button>`).join('');
      quick.querySelectorAll('[data-medical-reason]').forEach(b=>b.onclick=()=>appendQuickText(note,b.dataset.medicalReason));
@@ -1558,7 +1554,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
        if(!note.value.trim())return crpNotice('กรุณาระบุผู้ประเมินและรายละเอียดการตรวจ');
        button.disabled=true;try{const result=await api('saveMedicalReview',{applicationId:record.ApplicationID,checks,note:note.value.trim()});closeModal();await refreshCurrentTab();msg(result.pendingCount ? `บันทึกแล้ว ส่งตรวจเพิ่มเติม ${result.pendingCount} ข้อ — ไปที่เมนูรอตรวจเพิ่มเติม` : `บันทึกผลตรวจร่างกาย ${result.percent}% — ${result.status}`);}catch(e){}finally{button.disabled=false;}
      };
-     section.append(label,quick,note,score,button);attachMedicalSafetyReject(section,record,'medical',()=>{const checks={};MEDICAL_CHECKS.forEach((name,i)=>{const value=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(value)checks[name]=value;});return checks;});calculate();$('modalBody').append(section);
+     section.append(label,quick,note,score,button);attachMedicalSafetyReject(section,record,'medical',()=>{const checks={};MEDICAL_CHECKS.forEach((name,i)=>{const value=section.querySelector(`input[data-medical="${i}"]:checked`)?.value;if(value)checks[name]=value;});return checks;},note,button);calculate();$('modalBody').append(section);
    }
 
    /** เฉพาะผลที่บันทึกว่า 'ตรวจเพิ่มเติม' เท่านั้นจึงจะมีปุ่มแก้ไขได้ */
@@ -1579,7 +1575,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
         <div class="review-choice-group" role="radiogroup" aria-label="ผลตรวจเพิ่มเติม ${esc(name)}">${['ผ่าน','ไม่ผ่าน'].map(value=>`<label class="review-choice ${value==='ผ่าน'?'review-choice--pass':'review-choice--fail'}"><input type="radio" name="expertMedical${index}" data-expert-medical="${index}" value="${value}"><span>${value==='ผ่าน'?'✓ ผ่าน':'✕ ไม่ผ่าน'}</span></label>`).join('')}</div>`;
        section.append(row);
      }
-     const label=document.createElement('label');label.textContent='แพทย์ผู้เชี่ยวชาญและรายละเอียดผลตรวจเพิ่มเติม *';
+     const label=document.createElement('label');label.textContent='แพทย์ผู้เชี่ยวชาญและรายละเอียดผลตรวจเพิ่มเติม (สำหรับการไม่อนุมัติ ไม่บังคับกรอก)';
      const note=document.createElement('textarea');note.rows=3;note.maxLength=1600;note.placeholder='ชื่อผู้ตรวจ วันที่ตรวจ และข้อสังเกตของผลตรวจเพิ่มเติม';
      // ใช้ปุ่มข้อความสำเร็จรูปชุดเดียวกับหน้าตรวจร่างกายปกติ (กดแล้วเติมลงช่องรายละเอียด)
      const quick=document.createElement('div');quick.className='decision-quick-reasons medical-quick-reasons';
@@ -1598,7 +1594,7 @@ function dateText(v) { if (!v) return '-'; const d = new Date(v); return Number.
          msg(`บันทึกผลตรวจเพิ่มเติม ${result.resolvedCount} ข้อ — คะแนนรวม ${result.percent}% — ${result.status}`);
        }catch(error){}finally{button.disabled=false;}
      };
-     section.append(label,quick,note,button);attachMedicalSafetyReject(section,record,'medicalExtra',()=>{const checks={};for(const {name,index} of pending){const value=section.querySelector(`input[data-expert-medical="${index}"]:checked`)?.value;if(value)checks[name]=value;}return checks;});$('modalBody').append(section);
+     section.append(label,quick,note,button);attachMedicalSafetyReject(section,record,'medicalExtra',()=>{const checks={};for(const {name,index} of pending){const value=section.querySelector(`input[data-expert-medical="${index}"]:checked`)?.value;if(value)checks[name]=value;}return checks;},note,button);$('modalBody').append(section);
    }
 
    async function showTrainingGroupPicker(applicationId, currentGroup = '', applicantRecord = null) {
